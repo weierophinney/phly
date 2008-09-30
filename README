@@ -1,0 +1,15 @@
+PHLY is a library of PHP classes designed with the following intentions:
+
+* Loosely coupled; dependencies should be few, and no base class should be
+  necessary.
+* Extendible; all classes should be easily extendible. This may be via
+  observers, interfaces, adapters, etc.. The base class should solve 80% of
+  usage, and allow extensions to the class to fill in the remainder.
+* Designed for PHP5 and up; all classes should make use of PHP5's features.
+* Documented; all classes should minimally have excellent API-level
+  documentation, with use cases in the class docblock.
+* Tested; all classes should have unit tests accompanying them.
+* Open source and commercial friendly; all classes should use a
+  commercial-friendly open source license. The BSD license is one such example
+
+For more information, see http://weierophinney.net/phly/
