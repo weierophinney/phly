@@ -30,11 +30,11 @@ class Phly_Couch
 
     /**
      * Constructor
-     * 
+     *
      * @param  null|string|array|Zend_Config $info Database name, or array/config of options
      * @return void
      */
-    public function __construct($info = null) 
+    public function __construct($info = null)
     {
         if (null !== $info) {
             if (is_array($info)) {
@@ -49,8 +49,8 @@ class Phly_Couch
 
     /**
      * Set connection options
-     * 
-     * @param  array $options 
+     *
+     * @param  array $options
      * @return Phly_Couch
      */
     public function setOptions(array $options)
@@ -66,8 +66,8 @@ class Phly_Couch
 
     /**
      * Set connection options from Zend_Config object
-     * 
-     * @param  Zend_Config $config 
+     *
+     * @param  Zend_Config $config
      * @return Phly_Couch
      */
     public function setConfig(Zend_Config $config)
@@ -77,8 +77,8 @@ class Phly_Couch
 
     /**
      * Set Database on which to perform operations
-     * 
-     * @param  string $db 
+     *
+     * @param  string $db
      * @return Phly_Couch
      * @throws Phly_Couch_Exception for invalid DB name
      */
@@ -94,7 +94,7 @@ class Phly_Couch
 
     /**
      * Retrieve current database name
-     * 
+     *
      * @return string|null
      */
     public function getDb()
@@ -104,8 +104,8 @@ class Phly_Couch
 
     /**
      * Set database host
-     * 
-     * @param  string $host 
+     *
+     * @param  string $host
      * @return Phly_Couch
      */
     public function setHost($host)
@@ -116,18 +116,18 @@ class Phly_Couch
 
     /**
      * Retrieve database host
-     * 
+     *
      * @return string
      */
     public function getHost()
     {
         return $this->_host;
     }
-    
+
     /**
      * Set database host port
-     * 
-     * @param  int $port 
+     *
+     * @param  int $port
      * @return Phly_Couch
      */
     public function setPort($port)
@@ -138,7 +138,7 @@ class Phly_Couch
 
     /**
      * Retrieve database host port
-     * 
+     *
      * @return int
      */
     public function getPort()
@@ -150,8 +150,8 @@ class Phly_Couch
 
     /**
      * Set HTTP client
-     * 
-     * @param  Zend_Http_Client $client 
+     *
+     * @param  Zend_Http_Client $client
      * @return Phly_Couch
      */
     public function setHttpClient(Zend_Http_Client $client)
@@ -162,8 +162,8 @@ class Phly_Couch
 
     /**
      * Set default HTTP client
-     * 
-     * @param  Zend_Http_Client $client 
+     *
+     * @param  Zend_Http_Client $client
      * @return void
      */
     public static function setDefaultHttpClient(Zend_Http_Client $client)
@@ -173,7 +173,7 @@ class Phly_Couch
 
     /**
      * Get current HTTP client
-     * 
+     *
      * @return Zend_Http_Client
      */
     public function getHttpClient()
@@ -191,7 +191,7 @@ class Phly_Couch
 
     /**
      * Retrieve default HTTP client
-     * 
+     *
      * @return null|Zend_Http_Client
      */
     public static function getDefaultHttpClient()
@@ -205,7 +205,7 @@ class Phly_Couch
 
     /**
      * Get server information
-     * 
+     *
      * @return Phly_Couch_Result
      */
     public function serverInfo()
@@ -223,7 +223,7 @@ class Phly_Couch
 
     /**
      * Get list of all databases
-     * 
+     *
      * @return Phly_Couch_Result
      */
     public function allDbs()
@@ -241,8 +241,8 @@ class Phly_Couch
 
     /**
      * Compact a database
-     * 
-     * @param  null|string $db 
+     *
+     * @param  null|string $db
      * @return Phly_Couch_Result
      * @throws Phly_Couch_Exception when fails or no database specified
      */
@@ -261,8 +261,8 @@ class Phly_Couch
 
     /**
      * Create database
-     * 
-     * @param  string $db 
+     *
+     * @param  string $db
      * @return Phly_Couch_Result
      * @throws Phly_Couch_Exception when fails or invalid database name
      */
@@ -280,8 +280,8 @@ class Phly_Couch
 
     /**
      * Drop database
-     * 
-     * @param  string $db 
+     *
+     * @param  string $db
      * @return Phly_Couch_Result
      * @throws Phly_Couch_Exception when fails
      */
@@ -299,8 +299,8 @@ class Phly_Couch
 
     /**
      * Get database info
-     * 
-     * @param  string $db 
+     *
+     * @param  string $db
      * @return Phly_Couch_Result
      * @throws Phly_Couch_Exception when fails
      */
@@ -320,7 +320,7 @@ class Phly_Couch
 
     /**
      * Retrieve all documents for a give database
-     * 
+     *
      * @param  null|array $options Query options
      * @return Phly_Couch_DocumentSet
      * @throws Phly_Couch_Exception on failure or bad db
@@ -346,9 +346,9 @@ class Phly_Couch
 
     /**
      * Open a document
-     * 
-     * @param  string $id 
-     * @param  null|array $options 
+     *
+     * @param  string $id
+     * @param  null|array $options
      * @return Phly_Couch_Document
      * @throws Phly_Couch_Exception on failure
      * @todo   handle unsuccessful call
@@ -370,10 +370,10 @@ class Phly_Couch
 
     /**
      * Save a document
-     * 
+     *
      * @param  string|array|Phly_Couch_Document $document
-     * @param  null|string $id 
-     * @param  null|string $db 
+     * @param  null|string $id
+     * @param  null|string $db
      * @return Phly_Couch_Result
      * @throws Phly_Couch_Exception on failure
      */
@@ -409,6 +409,7 @@ class Phly_Couch
             }
             $method = 'PUT';
         }
+
         $this->getHttpClient()->setRawData($document->toJson());
         $response = $this->_prepareAndSend($path, $method);
         $status   = $response->getStatus();
@@ -424,16 +425,16 @@ class Phly_Couch
             case 201:
             default:
                 require_once 'Phly/Couch/Result.php';
-                return new Phly_Couch_Result($response->getBody());
+                return new Phly_Couch_Result($response);
                 break;
         }
     }
 
     /**
      * Remove a document
-     * 
-     * @param  string $id 
-     * @param  array $options 
+     *
+     * @param  string $id
+     * @param  array $options
      * @return Phly_Couch_Result
      * @throws Phly_Couch_Exception on failed call
      */
@@ -458,9 +459,9 @@ class Phly_Couch
 
     /**
      * Bulk save many documents at once
-     * 
-     * @param  array|Phly_Couch_DocumentSet $documents 
-     * @param  array $options 
+     *
+     * @param  array|Phly_Couch_DocumentSet $documents
+     * @param  array $options
      * @return Phly_Couch_Result
      * @throws Phly_Couch_Exception on failed save
      */
@@ -496,9 +497,9 @@ class Phly_Couch
 
     /**
      * Prepare the URI
-     * 
-     * @param  string $path 
-     * @param  null|array $queryParams 
+     *
+     * @param  string $path
+     * @param  null|array $queryParams
      * @return void
      */
     protected function _prepareUri($path, array $queryParams = null)
@@ -506,7 +507,6 @@ class Phly_Couch
         $client = $this->getHttpClient();
         $uri    = 'http://' . $this->getHost() . ':' . $this->getPort() . '/' . $path;
 
-        $client->resetParameters();
         $client->setUri($uri);
         if (null !== $queryParams) {
             foreach ($queryParams as $key => $value) {
@@ -520,10 +520,10 @@ class Phly_Couch
 
     /**
      * Prepare the URI and send the request
-     * 
-     * @param  string $path 
-     * @param  string $method 
-     * @param  null|array $queryParams 
+     *
+     * @param  string $path
+     * @param  string $method
+     * @param  null|array $queryParams
      * @return Zend_Http_Response
      */
     protected function _prepareAndSend($path, $method, array $queryParams = null)
@@ -531,13 +531,14 @@ class Phly_Couch
         $client = $this->getHttpClient();
         $this->_prepareUri($path, $queryParams);
         $response = $client->request($method);
+        $client->resetParameters();
         return $response;
     }
 
     /**
      * Verify database parameter
-     * 
-     * @param  mixed $db 
+     *
+     * @param  mixed $db
      * @return string
      * @throws Phly_Couch_Exception for invalid database
      */
