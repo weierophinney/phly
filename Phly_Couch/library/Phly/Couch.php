@@ -187,6 +187,8 @@ class Phly_Couch
      */
     public function getView($viewName, array $queryParams=array())
     {
+        // TODO: Request "document" information of the view here and use to instanciate
+
         $view = new Phly_Couch_View($viewName, $this);
 
         return $view;

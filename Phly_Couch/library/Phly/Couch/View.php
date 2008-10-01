@@ -16,6 +16,7 @@ class Phly_Couch_View extends Phly_Couch_Document implements Iterator, Countable
 
     public function __construct($viewName, Phly_Couch $database)
     {
+        // TODO: A view is a special document, that is, use the document parent to save view information.
         $this->_viewName = substr("_design/", "", $viewName);
 
         if($viewName !== "_all_docs") {
