@@ -19,6 +19,11 @@ class Phly_Couch_Result
         $this->_response = $response;
     }
 
+    public function toArray()
+    {
+        return array();
+    }
+
     public function getInfo()
     {
         return $this->_info;

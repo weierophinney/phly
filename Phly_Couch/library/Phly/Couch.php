@@ -4,29 +4,14 @@ require_once 'Zend/Json.php';
 class Phly_Couch
 {
     /**
-     * @var Zend_Http_Client HTTP client used for accessing server
-     */
-    protected $_client;
-
-    /**
      * @var string Database on which operations are performed
      */
     protected $_db;
 
     /**
-     * @var Zend_Http_Client Default HTTP client to use for CouchDB access
+     * @var Phly_Couch_Connection
      */
-    protected static $_defaultClient;
-
-    /**
-     * @var string Database host; defaults to 127.0.0.1
-     */
-    protected $_host = '127.0.0.1';
-
-    /**
-     * @var int Database host port; defaults to 5984
-     */
-    protected $_port = 5984;
+    protected $_connection;
 
     /**
      * Constructor
@@ -34,15 +19,15 @@ class Phly_Couch
      * @param  null|string|array|Zend_Config $info Database name, or array/config of options
      * @return void
      */
-    public function __construct($info = null)
+    public function __construct($options = null)
     {
-        if (null !== $info) {
-            if (is_array($info)) {
-                $this->setOptions($info);
-            } elseif ($info instanceof Zend_Config) {
-                $this->setConfig($info);
+        if (null !== $options) {
+            if (is_array($options)) {
+                $this->setOptions($options);
+            } elseif ($options instanceof Zend_Config) {
+                $this->setConfig($options);
             } elseif (is_string($info)) {
-                $this->setDb($info);
+                $this->setDb($options);
             }
         }
     }
@@ -99,143 +84,44 @@ class Phly_Couch
      */
     public function getDb()
     {
+        if($this->_db === null) {
+            throw new Phly_Couch_Exception("No Database was given!");
+        }
+
         return $this->_db;
     }
 
     /**
-     * Set database host
+     * Set a connection for this database
      *
-     * @param  string $host
-     * @return Phly_Couch
+     * @param Phly_Couch_Connection|array $connection
      */
-    public function setHost($host)
+    public function setConnection($connection)
     {
-        $this->_host = $host;
-        return $this;
-    }
-
-    /**
-     * Retrieve database host
-     *
-     * @return string
-     */
-    public function getHost()
-    {
-        return $this->_host;
-    }
-
-    /**
-     * Set database host port
-     *
-     * @param  int $port
-     * @return Phly_Couch
-     */
-    public function setPort($port)
-    {
-        $this->_port = (int) $port;
-        return $this;
-    }
-
-    /**
-     * Retrieve database host port
-     *
-     * @return int
-     */
-    public function getPort()
-    {
-        return $this->_port;
-    }
-
-    // HTTP client
-
-    /**
-     * Set HTTP client
-     *
-     * @param  Zend_Http_Client $client
-     * @return Phly_Couch
-     */
-    public function setHttpClient(Zend_Http_Client $client)
-    {
-        $this->_client = $client;
-        return $this;
-    }
-
-    /**
-     * Set default HTTP client
-     *
-     * @param  Zend_Http_Client $client
-     * @return void
-     */
-    public static function setDefaultHttpClient(Zend_Http_Client $client)
-    {
-        self::$_defaultClient = $client;
-    }
-
-    /**
-     * Get current HTTP client
-     *
-     * @return Zend_Http_Client
-     */
-    public function getHttpClient()
-    {
-        if (null === $this->_client) {
-            $client = self::getDefaultHttpClient();
-            if (null === $client) {
-                require_once 'Zend/Http/Client.php';
-                $client = new Zend_Http_Client;
-            }
-            $this->setHttpClient($client);
+        if($connection instanceof Phly_Couch_Connection) {
+            $this->_connection = $connection;
+        } else if(is_array($connection)) {
+            $this->_connection = new Phly_Couch_Connection($connection);
+        } else {
+            throw new Phly_Couch_Exception("Invalid connectin data given for database!");
         }
-        return $this->_client;
     }
 
     /**
-     * Retrieve default HTTP client
+     * Get connection of this database
      *
-     * @return null|Zend_Http_Client
+     * @throws Phly_Couch_Exception
+     * @return Phly_Couch_Connection
      */
-    public static function getDefaultHttpClient()
+    public function getConnection()
     {
-        return self::$_defaultClient;
+        if($this->_connection === null) {
+            $this->_connection = Phly_Couch_Connection::getDefaultConnection();
+        }
+        return $this->_connection;
     }
 
     // API METHODS
-
-    // Server API methods
-
-    /**
-     * Get server information
-     *
-     * @return Phly_Couch_Result
-     */
-    public function serverInfo()
-    {
-        $this->_prepareUri('');
-        $response = $this->_prepareAndSend('', 'GET');
-        if (!$response->isSuccessful()) {
-            require_once 'Phly/Couch/Exception.php';
-            throw new Phly_Couch_Exception(sprintf('Failed retrieving server information; received response code "%s"', (string) $response->getStatus()));
-        }
-
-        require_once 'Phly/Couch/Result.php';
-        return new Phly_Couch_Result($response);
-    }
-
-    /**
-     * Get list of all databases
-     *
-     * @return Phly_Couch_Result
-     */
-    public function allDbs()
-    {
-        $response = $this->_prepareAndSend('_all_dbs', 'GET');
-        if (!$response->isSuccessful()) {
-            require_once 'Phly/Couch/Exception.php';
-            throw new Phly_Couch_Exception(sprintf('Failed retrieving database list; received response code "%s"', (string) $response->getStatus()));
-        }
-        require_once 'Phly/Couch/Result.php';
-        return new Phly_Couch_Result($response);
-    }
 
     // Database API methods
 
@@ -254,44 +140,6 @@ class Phly_Couch
         if (202 !== $status) {
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception(sprintf('Failed compacting database "%s": received response code "%s"', $db, (string) $response->getStatus()));
-        }
-        require_once 'Phly/Couch/Result.php';
-        return new Phly_Couch_Result($response);
-    }
-
-    /**
-     * Create database
-     *
-     * @param  string $db
-     * @return Phly_Couch_Result
-     * @throws Phly_Couch_Exception when fails or invalid database name
-     */
-    public function dbCreate($db = null)
-    {
-        $db = $this->_verifyDb($db);
-        $response = $this->_prepareAndSend($db, 'PUT');
-        if (!$response->isSuccessful()) {
-            require_once 'Phly/Couch/Exception.php';
-            throw new Phly_Couch_Exception(sprintf('Failed creating database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
-        }
-        require_once 'Phly/Couch/Result.php';
-        return new Phly_Couch_Result($response);
-    }
-
-    /**
-     * Drop database
-     *
-     * @param  string $db
-     * @return Phly_Couch_Result
-     * @throws Phly_Couch_Exception when fails
-     */
-    public function dbDrop($db = null)
-    {
-        $db = $this->_verifyDb($db);
-        $response = $this->_prepareAndSend($db, 'DELETE');
-        if (!$response->isSuccessful()) {
-            require_once 'Phly/Couch/Exception.php';
-            throw new Phly_Couch_Exception(sprintf('Failed dropping database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
         }
         require_once 'Phly/Couch/Result.php';
         return new Phly_Couch_Result($response);
@@ -327,21 +175,21 @@ class Phly_Couch
      */
     public function allDocs(array $options = null)
     {
-        $db = null;
-        if (is_array($options) && array_key_exists('db', $options)) {
-            $db = $options['db'];
-            unset($options['db']);
-        }
-        $db = $this->_verifyDb($db);
+        return $this->getView('_all_docs');
+    }
 
-        $response = $this->_prepareAndSend($db . '/_all_docs', 'GET', $options);
-        if (!$response->isSuccessful()) {
-            require_once 'Phly/Couch/Exception.php';
-            throw new Phly_Couch_Exception(sprintf('Failed querying database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
-        }
+    /**
+     * Get rows from a view
+     *
+     * @param  string $viewName
+     * @param  array  $queryParams
+     * @return Phly_Couch_ViewSet
+     */
+    public function getView($viewName, array $queryParams=array())
+    {
+        $view = new Phly_Couch_View($viewName, $this);
 
-        require_once 'Phly/Couch/DocumentSet.php';
-        return new Phly_Couch_DocumentSet($response->getBody());
+        return $view;
     }
 
     /**
@@ -355,17 +203,12 @@ class Phly_Couch
      */
     public function docOpen($id, array $options = null)
     {
-        $db = null;
-        if (is_array($options) && array_key_exists('db', $options)) {
-            $db = $options['db'];
-            unset($options['db']);
-        }
-        $db = $this->_verifyDb($db);
+        $db = $this->getDb($db);
 
         $response = $this->_prepareAndSend($db . '/' . $id, 'GET', $options);
 
         require_once 'Phly/Couch/Document.php';
-        return new Phly_Couch_Document($response->getBody());
+        return new Phly_Couch_Document($response->getBody(), $this);
     }
 
     /**
@@ -379,7 +222,7 @@ class Phly_Couch
      */
     public function docSave($document, $id = null, $db = null)
     {
-        $db     = $this->_verifyDb($db);
+        $db     = $this->getDb($db);
         $path   = $db . '/';
         $method = 'POST';
         if (null !== $id) {
@@ -410,7 +253,7 @@ class Phly_Couch
             $method = 'PUT';
         }
 
-        $this->getHttpClient()->setRawData($document->toJson());
+        $this->getConnection()->getHttpClient()->setRawData($document->toJson());
         $response = $this->_prepareAndSend($path, $method);
         $status   = $response->getStatus();
         switch ($status) {
@@ -440,12 +283,7 @@ class Phly_Couch
      */
     public function docRemove($id, array $options = null)
     {
-        $db = null;
-        if (is_array($options) && array_key_exists('db', $options)) {
-            $db = $options['db'];
-            unset($options['db']);
-        }
-        $db = $this->_verifyDb($db);
+        $db = $this->getDb();
 
         $response = $this->_prepareAndSend($db . '/' . $id, 'DELETE', $options);
         if (!$response->isSuccessful()) {
@@ -467,12 +305,7 @@ class Phly_Couch
      */
     public function docBulkSave($documents, array $options = null)
     {
-        $db = null;
-        if (is_array($options) && array_key_exists('db', $options)) {
-            $db = $options['db'];
-            unset($options['db']);
-        }
-        $db = $this->_verifyDb($db);
+        $db = $this->getDb($db);
 
         if (is_array($documents)) {
             require_once 'Phly/Couch/DocumentSet.php';
@@ -493,31 +326,6 @@ class Phly_Couch
         return new Phly_Couch_Result($response);
     }
 
-    // Helper methods
-
-    /**
-     * Prepare the URI
-     *
-     * @param  string $path
-     * @param  null|array $queryParams
-     * @return void
-     */
-    protected function _prepareUri($path, array $queryParams = null)
-    {
-        $client = $this->getHttpClient();
-        $uri    = 'http://' . $this->getHost() . ':' . $this->getPort() . '/' . $path;
-
-        $client->setUri($uri);
-        if (null !== $queryParams) {
-            foreach ($queryParams as $key => $value) {
-                if (is_bool($value)) {
-                    $queryParams[$key] = ($value) ? 'true' : 'false';
-                }
-            }
-            $client->setParameterGet($queryParams);
-        }
-    }
-
     /**
      * Prepare the URI and send the request
      *
@@ -528,31 +336,6 @@ class Phly_Couch
      */
     protected function _prepareAndSend($path, $method, array $queryParams = null)
     {
-        $client = $this->getHttpClient();
-        $this->_prepareUri($path, $queryParams);
-        $response = $client->request($method);
-        $client->resetParameters();
-        return $response;
-    }
-
-    /**
-     * Verify database parameter
-     *
-     * @param  mixed $db
-     * @return string
-     * @throws Phly_Couch_Exception for invalid database
-     */
-    protected function _verifyDb($db)
-    {
-        if (null === $db) {
-            $db = $this->getDb();
-            if (null === $db) {
-                require_once 'Phly/Couch/Exception.php';
-                throw new Phly_Couch_Exception('Must specify a database to query');
-            }
-        } else {
-            $this->setDb($db);
-        }
-        return $db;
+        return $this->getConnection()->send($path, $method, $queryParams);
     }
 }

@@ -3,7 +3,9 @@ class Phly_Couch_Document
 {
     protected $_data = array();
 
-    public function __construct($options = null)
+    protected $_database;
+
+    public function __construct($options = null, $database=null)
     {
         if (is_string($options)) {
             if ('{' == substr($options, 0, 1)) {
@@ -17,6 +19,23 @@ class Phly_Couch_Document
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception('Invalid options provided to ' . __CLASS__ . 'constructor');
         }
+
+        if($database instanceof Phly_Couch) {
+            $this->setDatabase($database);
+        }
+    }
+
+    public function setDatabase(Phly_Couch $database)
+    {
+        $this->_database = $database;
+    }
+
+    public function getDatabase()
+    {
+        if($this->_database === null) {
+            throw new Phly_Couch_Exception("No database set!");
+        }
+        return $this->_database;
     }
 
     public function setId($id)
@@ -114,5 +133,10 @@ class Phly_Couch_Document
         if (isset($this->$name)) {
             unset($this->_data[$name]);
         }
+    }
+
+    public function save()
+    {
+        return $this->getDatabase()->docSave($this, $this->getId());
     }
 }
