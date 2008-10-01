@@ -273,6 +273,8 @@ class Phly_Couch
                 return new Phly_Couch_Result($response);
                 break;
         }
+
+        // TODO: Make changes to the document class, revision and key for example
     }
 
     /**

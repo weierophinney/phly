@@ -1,9 +1,10 @@
 <?php
 
-class Phly_Couch_View extends Phly_Couch_Document implements Iterator, Countable
+class Phly_Couch_View implements Iterator, Countable
 {
     protected $_viewName;
 
+    // TODO: This is really the Document Id, integrate both
     protected $_internalViewName;
 
     protected $_fetchedView = false;
@@ -17,6 +18,7 @@ class Phly_Couch_View extends Phly_Couch_Document implements Iterator, Countable
     public function __construct($viewName, Phly_Couch $database)
     {
         // TODO: A view is a special document, that is, use the document parent to save view information.
+        // TODO: It sucks to have View iteration and view editing in the same class, @see getViewDocument()
         $this->_viewName = substr("_design/", "", $viewName);
 
         if($viewName !== "_all_docs") {
@@ -29,8 +31,26 @@ class Phly_Couch_View extends Phly_Couch_Document implements Iterator, Countable
         $this->_database = $database;
     }
 
+    /**
+     * Return document of the view
+     *
+     * @return Phly_Couch_Document
+     */
+    public function getViewDocument()
+    {
+        return $this->_database->docOpen($this->_internalViewName);
+    }
+
+    /**
+     * Query View for results. Use Params for sorting and other options.
+     *
+     * @param array $params
+     * @throws Phly_Couch_Exception
+     * @return Phly_Couch_View
+     */
     public function query($params)
     {
+        // TODO: Connection Class can do most of this already
         $response = $this->_prepareAndSend($this->_database->getDb() . '/' . $this->_internalViewName, 'GET', $queryParams);
         if (!$response->isSuccessful()) {
             require_once 'Phly/Couch/Exception.php';
@@ -47,8 +67,24 @@ class Phly_Couch_View extends Phly_Couch_Document implements Iterator, Countable
         } else {
             throw new Phly_Couch_Exception("CouchDb Response is not a valid view result.");
         }
+        return $this;
     }
 
+    /**
+     * Couch Views return a key field that is primarily designed for sorting by.
+     *
+     * @return boolean
+     */
+    public function sortByKey()
+    {
+        // TODO: Sort View Rows by Couch returned key names
+    }
+
+    /**
+     * Return the complete View Json Response as an array
+     *
+     * @return array
+     */
     public function toArray()
     {
         if($this->_fetchedView === false) {
@@ -58,6 +94,11 @@ class Phly_Couch_View extends Phly_Couch_Document implements Iterator, Countable
         return array('total_rows' => $this->_count, 'offset' => $this->_offset, 'rows' => $this->_rows);
     }
 
+    /**
+     * Return number of view results
+     *
+     * @return int
+     */
     public function count()
     {
         if($this->_fetchedView === false) {
