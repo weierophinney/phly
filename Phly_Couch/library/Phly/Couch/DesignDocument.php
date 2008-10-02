@@ -45,7 +45,7 @@ class Phly_Couch_DesignDocument extends Phly_Couch_Document
      * @param array $queryParams
      * @return unknown
      */
-    public function queryView($viewName, array $queryParams=array())
+    public function fetchView($viewName, array $queryParams=array())
     {
         if(!isset($this->_data['views'][$viewName])) {
             throw new Phly_Couch_Exception(sprintf("Design document '%s' has no view with the name '%s'", $this->getId(), $viewName));
