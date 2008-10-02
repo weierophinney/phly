@@ -278,6 +278,29 @@ class Phly_Couch_Connection
         $this->_prepareUri($path, $queryParams);
         $response = $client->request($method);
         $client->resetParameters();
+
+        if (!$response->isSuccessful()) {
+            $body = $response->getBody();
+            $errorMessage = "";
+            $reason = "";
+            try {
+                $body = Zend_Json::decode($body);
+                if(isset($body['error']) && isset($body['reason'])) {
+                    $errorMessage = $body['error'];
+                    $reason       = $body['reason'];
+                }
+            } catch(Zend_Json_Exception $e) {
+                $errorMessage = "(No Error Response from CouchDB)";
+            }
+
+            require_once 'Phly/Couch/Connection/Response/Exception.php';
+            throw new Phly_Couch_Connection_Response_Exception(
+                sprintf('Failed query "%s" (response: "%s") with message: %s - %s', $path, (string) $response->getStatus(), $errorMessage, $reason),
+                $response,
+                $this->getHttpClient()->getLastRequest()
+            );
+        }
+
         return $response;
     }
 

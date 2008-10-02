@@ -79,14 +79,9 @@ class Phly_Couch_View implements Iterator, Countable
      * @throws Phly_Couch_Exception
      * @return Phly_Couch_View
      */
-    public function query($queryParams)
+    public function query(array $queryParams=array())
     {
         $response = $this->_prepareAndSend($queryParams);
-        if (!$response->isSuccessful()) {
-            require_once 'Phly/Couch/Exception.php';
-            throw new Phly_Couch_Exception(sprintf('Failed querying database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
-        }
-
         $body = Zend_Json::decode($response->getBody());
 
         if(isset($body['total_rows']) && isset($body['rows']) && isset($body['offset'])) {

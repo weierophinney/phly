@@ -273,9 +273,14 @@ class Phly_Couch
             $method = 'PUT';
         }
 
-        $this->getConnection()->getHttpClient()->setRawData($document->toJson());
-        $response = $this->_prepareAndSend($path, $method);
-        $status   = $response->getStatus();
+        try {
+            $this->getConnection()->getHttpClient()->setRawData($document->toJson());
+            $response = $this->_prepareAndSend($path, $method);
+            $status   = $response->getStatus();
+        } catch(Phly_Couch_Connection_Response_Exception $e) {
+            $status = $e->getHttpResponse()->getStatus();
+        }
+
         switch ($status) {
             case 412:
                 require_once 'Phly/Couch/Exception.php';

@@ -56,8 +56,8 @@ class Phly_Couch_TemporaryView extends Phly_Couch_View
         }
         $tempViewJson = Zend_Json::encode($tempViewJson);
 
-        $path = $this->_database->getDb() . '/_temp_view';
-        $this->_database->getHttpClient()->setRawData($tempViewJson);
-        return $this->_database->getConnection()->send($path, 'POST', $queryParams);
+        $path = $this->getDatabase()->getDb() . '/_temp_view';
+        $this->getDatabase()->getConnection()->getHttpClient()->setRawData($tempViewJson, 'application/json');
+        return $this->getDatabase()->getConnection()->send($path, 'POST', $queryParams);
     }
 }

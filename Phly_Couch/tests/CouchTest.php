@@ -115,11 +115,17 @@ class CouchTest extends PHPUnit_Framework_TestCase
         $this->_database->docSave($document1);
         $this->_database->docSave($document2);
 
-        $map = "function(doc) { if(doc.foo == baz) { emit(null, doc); }}";
+        $map = "function(doc) { if(doc.foo == 'baz') { emit(null, doc.foo); }}";
         $tempView = new Phly_Couch_TemporaryView($map, null, $this->_database);
         $tempView->query();
 
         $this->assertEquals(1, count($tempView));
+        if($viewRow = $tempView->current()) {
+            $this->assertEquals(null, $viewRow->getKey());
+            $this->assertEquals("baz", $viewRow->getData());
+        } else {
+            $this->fail();
+        }
     }
 
     public function testDbBuildSave()
