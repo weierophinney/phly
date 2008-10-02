@@ -56,6 +56,13 @@ class CouchTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(2, count($result));
         $this->assertEquals(2, count($result2));
 
+        try {
+            $designDoc = $result->getDesignDocument();
+            $this->fail();
+        } catch(Phly_Couch_Exception $e) {
+
+        }
+
         foreach($result AS $viewRow) {
             $this->assertTrue($viewRow instanceof Phly_Couch_ViewRow);
             $doc = $viewRow->getDocument();
@@ -65,6 +72,7 @@ class CouchTest extends PHPUnit_Framework_TestCase
             $this->assertContains("bar", $docJson);
             $this->assertContains("baz", $docJson);
             $this->assertContains("test", $docJson);
+            $this->assertEquals($viewRow->rev, $doc->getRevision());
         }
     }
 
@@ -85,6 +93,61 @@ class CouchTest extends PHPUnit_Framework_TestCase
         $data = $document->toArray();
         unset($data['_rev']);
         $this->assertEquals(array('_id' => 'testId', 'foo' => 'bar', 'baz' => 'test', 'subject' => 'hello World!'), $data);
+    }
+
+    public function testDbRemoveDoc()
+    {
+        $document = new Phly_Couch_Document(array('_id' => 'testId', 'foo' => 'bar', 'baz' => 'test'), $this->_database);
+        $document->save();
+
+        try {
+            $this->_database->docRemove($document->getId());
+            $this->success();
+        } catch(Exception $e) {
+            $this->fail();
+        }
+    }
+
+    public function testDbBuildSave()
+    {
+        // 3 Different Ids only! last ones gets udpated!
+        $document1 = new Phly_Couch_Document(array('_id' => 'testId1', 'foo' => 'bar', 'baz' => 'test'), $this->_database);
+        $document2 = new Phly_Couch_Document(array('_id' => 'testId2', 'foo' => 'bar', 'baz' => 'test'), $this->_database);
+        $document3 = new Phly_Couch_Document(array('_id' => 'testId3', 'no' => 'yes', 'yes' => 'no'), $this->_database);
+        $document4 = new Phly_Couch_Document(array('_id' => 'testId3', 'foo' => 'bar', 'baz' => 'test'), $this->_database);
+
+        $set = new Phly_Couch_DocumentSet();
+        $set->add($document1);
+        $set->add($document2);
+        $set->add($document3);
+        $set->add($document4);
+
+        try {
+            $this->_database->docBulkSave($set);
+        } catch(Exception $e) {
+            $this->fail();
+        }
+
+        $allDocs = $this->_database->allDocs();
+
+        try {
+            $designDoc = $allDocs->getDesignDocument();
+            $this->fail();
+        } catch(Phly_Couch_Exception $e) {
+        }
+        $this->assertEquals(3, count($allDocs));
+
+        foreach($allDocs AS $viewRow) {
+            $this->assertTrue($viewRow instanceof Phly_Couch_ViewRow);
+            $doc = $viewRow->getDocument();
+            $this->assertTrue($doc instanceof Phly_Couch_Document);
+            $docJson = $doc->toJson();
+            $this->assertContains("foo", $docJson);
+            $this->assertContains("bar", $docJson);
+            $this->assertContains("baz", $docJson);
+            $this->assertContains("test", $docJson);
+            $this->assertEquals($viewRow->rev, $doc->getRevision());
+        }
     }
 
     public function tearDown()

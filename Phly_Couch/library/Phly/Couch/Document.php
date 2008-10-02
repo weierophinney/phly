@@ -33,7 +33,7 @@ class Phly_Couch_Document
     public function getDatabase()
     {
         if($this->_database === null) {
-            throw new Phly_Couch_Exception("No database set!");
+            throw new Phly_Couch_Exception(sprintf("No database set for document with id '%s'!", $this->getId()));
         }
         return $this->_database;
     }
@@ -82,6 +82,7 @@ class Phly_Couch_Document
 
     public function getRevisions()
     {
+        // TODO: This is working total different. Rebuild please
         if (array_key_exists('_revs_info', $this->_data)) {
             return $this->_data['_revs_info'];
         }

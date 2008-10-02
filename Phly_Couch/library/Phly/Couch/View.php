@@ -2,10 +2,9 @@
 
 class Phly_Couch_View implements Iterator, Countable
 {
-    protected $_viewName;
+    protected $_viewUri;
 
-    // TODO: This is really the Document Id, integrate both
-    protected $_internalViewName;
+    protected $_designDocument = null;
 
     protected $_fetchedView = false;
 
@@ -15,30 +14,46 @@ class Phly_Couch_View implements Iterator, Countable
 
     protected $_database = null;
 
-    public function __construct($viewName, Phly_Couch $database)
+    /**
+     * Create a new view object that acts as an iterator over all documents.
+     *
+     * To fetch the rows that should be iterated over {@see query()} is used.
+     * If no query was fired, all documents of the view are iterated over.
+     *
+     * @param unknown_type $viewUri
+     * @param Phly_Couch $database
+     */
+    public function __construct($viewUri, Phly_Couch $database)
     {
-        // TODO: A view is a special document, that is, use the document parent to save view information.
-        // TODO: It sucks to have View iteration and view editing in the same class, @see getViewDocument()
-        $this->_viewName = substr("_design/", "", $viewName);
-
-        if($viewName !== "_all_docs") {
-            if(!strpos($viewName, "_design/")) {
-                $viewName = "_design/".$viewName;
-            }
+        if($viewUri !== "_all_docs" && !strpos($viewUri, "_design/")) {
+            $viewUri = "_design/".$viewUri;
         }
-        $this->_internalViewName = $viewName;
+        $this->_viewUri = $viewUri;
+
+        if($viewUri !== "_all_docs") {
+            $parts = explode("/", $viewUri);
+            $this->_designDocument = "_design/".$parts[1];
+        }
 
         $this->_database = $database;
     }
 
+    public function getDesignDocumentName()
+    {
+        return $this->_designDocument;
+    }
+
     /**
-     * Return document of the view
+     * Return design document that defined this view
      *
      * @return Phly_Couch_Document
      */
-    public function getViewDocument()
+    public function getDesignDocument()
     {
-        return $this->_database->docOpen($this->_internalViewName);
+        if($this->_designDocument === null) {
+            throw new Phly_Couch_Exception(sprintf("View '%s' has no design document.", $this->_viewUri));
+        }
+        return $this->_database->docOpen($this->_designDocument);
     }
 
     /**
@@ -51,7 +66,7 @@ class Phly_Couch_View implements Iterator, Countable
     public function query($params)
     {
         // TODO: Connection Class can do most of this already
-        $response = $this->_prepareAndSend($this->_database->getDb() . '/' . $this->_internalViewName, 'GET', $queryParams);
+        $response = $this->_prepareAndSend($this->_database->getDb() . '/' . $this->_viewUri, 'GET', $queryParams);
         if (!$response->isSuccessful()) {
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception(sprintf('Failed querying database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
@@ -105,6 +120,11 @@ class Phly_Couch_View implements Iterator, Countable
             $this->query(array());
         }
 
+        return count($this->_rows);
+    }
+
+    public function getTotalDocumentCount()
+    {
         return $this->_count;
     }
 

@@ -1,4 +1,5 @@
 <?php
+// TODO: Could implement a max documents integer that when being hit updates all the docs and removes them from the set
 class Phly_Couch_DocumentSet implements Iterator,Countable
 {
     protected $_documents = array();
@@ -9,16 +10,13 @@ class Phly_Couch_DocumentSet implements Iterator,Countable
             $this->loadJson($options);
         } elseif (is_array($options)) {
             $this->loadArray($options);
-        } else {
-            require_once 'Phly/Couch/Exception.php';
-            throw new Phly_Couch_Exception('Invalid options provided to ' . __CLASS__ . 'constructor');
         }
     }
 
     /**
-     * add 
-     * 
-     * @param  array|Phly_Couch_Document $document 
+     * add
+     *
+     * @param  array|Phly_Couch_Document $document
      * @return Phly_Couch_DocumentSet
      */
     public function add($document)

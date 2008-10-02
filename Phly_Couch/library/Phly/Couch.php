@@ -129,12 +129,12 @@ class Phly_Couch
      * Compact a database
      *
      * @param  null|string $db
-     * @return Phly_Couch_Result
+     * @r-eturn Phly_Couch_Result
      * @throws Phly_Couch_Exception when fails or no database specified
      */
-    public function dbCompact($db = null)
+    public function compact()
     {
-        $db = $this->_verifyDb($db);
+        $db = $this->getDb();
         $response = $this->_prepareAndSend($db . '/_compact', 'POST');
         $status = $response->getStatus();
         if (202 !== $status) {
@@ -152,9 +152,10 @@ class Phly_Couch
      * @return Phly_Couch_Result
      * @throws Phly_Couch_Exception when fails
      */
-    public function dbInfo($db = null)
+    public function info()
     {
-        $db = $this->_verifyDb($db);
+        $db = $this->getDb();
+
         $response = $this->_prepareAndSend($db, 'GET');
         if (!$response->isSuccessful()) {
             require_once 'Phly/Couch/Exception.php';
@@ -181,15 +182,16 @@ class Phly_Couch
     /**
      * Get rows from a view
      *
-     * @param  string $viewName
+     * @param  string $viewName including the design document name
      * @param  array  $queryParams
      * @return Phly_Couch_ViewSet
      */
     public function getView($viewName, array $queryParams=array())
     {
-        // TODO: Request "document" information of the view here and use to instanciate
-
         $view = new Phly_Couch_View($viewName, $this);
+        if(count($queryParams) > 0) {
+            $view->query($queryParams);
+        }
 
         return $view;
     }
@@ -209,8 +211,14 @@ class Phly_Couch
 
         $response = $this->_prepareAndSend($db . '/' . $id, 'GET', $options);
 
+        // TODO: What about empty result?
+
         require_once 'Phly/Couch/Document.php';
-        return new Phly_Couch_Document($response->getBody(), $this);
+        if(strpos($id, '_design/') === 0) {
+            return new Phly_Couch_DesignDocument($response->getBody(), $this);
+        } else {
+            return new Phly_Couch_Document($response->getBody(), $this);
+        }
     }
 
     /**
@@ -319,7 +327,7 @@ class Phly_Couch
             throw new Phly_Couch_Exception('Invalid document set provided to bulk save operation');
         }
 
-        $this->getHttpClient()->setRawData($documents->toJson());
+        $this->getConnection()->getHttpClient()->setRawData($documents->toJson());
         $response = $this->_prepareAndSend($db . '/_bulk_docs', 'POST', $options);
         if (!$response->isSuccessful()) {
             require_once 'Phly/Couch/Exception.php';
