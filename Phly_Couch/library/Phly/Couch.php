@@ -196,6 +196,16 @@ class Phly_Couch
         return $view;
     }
 
+    public function getTemporaryView($map, $reduce=null, array $queryParams=array())
+    {
+        $view = new Phly_Couch_TemporaryView($map, $reduce, $this);
+        if(count($queryParams) > 0) {
+            $view->query($queryParams);
+        }
+
+        return $view;
+    }
+
     /**
      * Open a document
      *

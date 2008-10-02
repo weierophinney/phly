@@ -108,6 +108,20 @@ class CouchTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    public function testTemporaryView()
+    {
+        $document1 = new Phly_Couch_Document(array('_id' => 'testId1', 'foo' => 'bar'), $this->_database);
+        $document2 = new Phly_Couch_Document(array('_id' => 'testId2', 'foo' => 'baz'), $this->_database);
+        $this->_database->docSave($document1);
+        $this->_database->docSave($document2);
+
+        $map = "function(doc) { if(doc.foo == baz) { emit(null, doc); }}";
+        $tempView = new Phly_Couch_TemporaryView($map, null, $this->_database);
+        $tempView->query();
+
+        $this->assertEquals(1, count($tempView));
+    }
+
     public function testDbBuildSave()
     {
         // 3 Different Ids only! last ones gets udpated!

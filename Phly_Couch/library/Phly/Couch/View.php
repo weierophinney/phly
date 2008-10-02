@@ -35,7 +35,23 @@ class Phly_Couch_View implements Iterator, Countable
             $this->_designDocument = "_design/".$parts[1];
         }
 
+        if($database !== null) {
+            $this->setDatabase($database);
+        }
+    }
+
+    public function setDatabase(Phly_Couch $database)
+    {
         $this->_database = $database;
+        return $this;
+    }
+
+    public function getDatabase()
+    {
+        if($this->_database === null) {
+            throw new Phly_Couch_Exception("Database is not set in view.");
+        }
+        return $this->_database;
     }
 
     public function getDesignDocumentName()
@@ -63,10 +79,9 @@ class Phly_Couch_View implements Iterator, Countable
      * @throws Phly_Couch_Exception
      * @return Phly_Couch_View
      */
-    public function query($params)
+    public function query($queryParams)
     {
-        // TODO: Connection Class can do most of this already
-        $response = $this->_prepareAndSend($this->_database->getDb() . '/' . $this->_viewUri, 'GET', $queryParams);
+        $response = $this->_prepareAndSend($queryParams);
         if (!$response->isSuccessful()) {
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception(sprintf('Failed querying database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
@@ -187,8 +202,9 @@ class Phly_Couch_View implements Iterator, Countable
      * @param  null|array $queryParams
      * @return Zend_Http_Response
      */
-    protected function _prepareAndSend($path, $method, array $queryParams = null)
+    protected function _prepareAndSend($queryParams = null)
     {
-        return $this->_database->getConnection()->send($path, $method, $queryParams);
+        $path = $this->_database->getDb() . '/' . $this->_viewUri;
+        return $this->_database->getConnection()->send($path, 'GET', $queryParams);
     }
 }
