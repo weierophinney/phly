@@ -64,7 +64,7 @@ class Phly_Couch_View implements Iterator, Countable
      *
      * @return Phly_Couch_Document
      */
-    public function getDesignDocument()
+    public function fetchDesignDocument()
     {
         if($this->_designDocument === null) {
             throw new Phly_Couch_Exception(sprintf("View '%s' has no design document.", $this->_viewUri));

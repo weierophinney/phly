@@ -171,12 +171,12 @@ class Phly_Couch
      * Retrieve all documents for a give database
      *
      * @param  null|array $options Query options
-     * @return Phly_Couch_DocumentSet
+     * @return Phly_Couch_View
      * @throws Phly_Couch_Exception on failure or bad db
      */
-    public function allDocs(array $options = null)
+    public function fetchAllDocuments(array $options = null)
     {
-        return $this->getView('_all_docs');
+        return $this->fetchView('_all_docs');
     }
 
     /**
@@ -184,9 +184,9 @@ class Phly_Couch
      *
      * @param  string $viewName including the design document name
      * @param  array  $queryParams
-     * @return Phly_Couch_ViewSet
+     * @return Phly_Couch_View
      */
-    public function getView($viewName, array $queryParams=array())
+    public function fetchView($viewName, array $queryParams=array())
     {
         $view = new Phly_Couch_View($viewName, $this);
         if(count($queryParams) > 0) {
@@ -196,7 +196,15 @@ class Phly_Couch
         return $view;
     }
 
-    public function getTemporaryView($map, $reduce=null, array $queryParams=array())
+    /**
+     * Fetch rows from a temporary view given a map (and optionally reduce) strategy.
+     *
+     * @param string $map
+     * @param string $reduce
+     * @param array $queryParams
+     * @return Phly_Couch_View
+     */
+    public function fetchTemporaryView($map, $reduce=null, array $queryParams=array())
     {
         $view = new Phly_Couch_TemporaryView($map, $reduce, $this);
         if(count($queryParams) > 0) {

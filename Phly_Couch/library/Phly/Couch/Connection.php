@@ -193,7 +193,7 @@ class Phly_Couch_Connection
      *
      * @return Phly_Couch_Result
      */
-    public function allDbs()
+    public function fetchAllDatabases()
     {
         $response = $this->_prepareAndSend('_all_dbs', 'GET');
         if (!$response->isSuccessful()) {

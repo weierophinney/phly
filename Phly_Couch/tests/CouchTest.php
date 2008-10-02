@@ -33,7 +33,7 @@ class CouchTest extends PHPUnit_Framework_TestCase
 
     public function testListDb()
     {
-        $result = $this->_connection->allDbs();
+        $result = $this->_connection->fetchAllDatabases();
         $this->assertTrue($result instanceof Phly_Couch_Result);
         $this->assertContains('couchunittest', $result->getInfo());
     }
@@ -46,10 +46,10 @@ class CouchTest extends PHPUnit_Framework_TestCase
         $document = new Phly_Couch_Document(array('bar' => 'foo', 'test' => 'baz'));
         $this->_database->docSave($document);
 
-        $result = $this->_database->allDocs();
+        $result = $this->_database->fetchAllDocuments();
         $this->assertTrue($result instanceof Phly_Couch_View);
 
-        $result2 = $this->_database->getView('_all_docs');
+        $result2 = $this->_database->fetchView('_all_docs');
         $this->assertTrue($result2 instanceof Phly_Couch_View);
 
         $this->assertEquals($result->toArray(), $result2->toArray());
@@ -57,7 +57,7 @@ class CouchTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(2, count($result2));
 
         try {
-            $designDoc = $result->getDesignDocument();
+            $designDoc = $result->fetchDesignDocument();
             $this->fail();
         } catch(Phly_Couch_Exception $e) {
 
@@ -65,7 +65,7 @@ class CouchTest extends PHPUnit_Framework_TestCase
 
         foreach($result AS $viewRow) {
             $this->assertTrue($viewRow instanceof Phly_Couch_ViewRow);
-            $doc = $viewRow->getDocument();
+            $doc = $viewRow->fetchDocument();
             $this->assertTrue($doc instanceof Phly_Couch_Document);
             $docJson = $doc->toJson();
             $this->assertContains("foo", $docJson);
@@ -148,10 +148,10 @@ class CouchTest extends PHPUnit_Framework_TestCase
             $this->fail();
         }
 
-        $allDocs = $this->_database->allDocs();
+        $allDocs = $this->_database->fetchAllDocuments();
 
         try {
-            $designDoc = $allDocs->getDesignDocument();
+            $designDoc = $allDocs->fetchDesignDocument();
             $this->fail();
         } catch(Phly_Couch_Exception $e) {
         }
@@ -159,7 +159,7 @@ class CouchTest extends PHPUnit_Framework_TestCase
 
         foreach($allDocs AS $viewRow) {
             $this->assertTrue($viewRow instanceof Phly_Couch_ViewRow);
-            $doc = $viewRow->getDocument();
+            $doc = $viewRow->fetchDocument();
             $this->assertTrue($doc instanceof Phly_Couch_Document);
             $docJson = $doc->toJson();
             $this->assertContains("foo", $docJson);

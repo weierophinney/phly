@@ -83,7 +83,7 @@ class Phly_Couch_ViewRow
      * @throws Phly_Couch_Exception
      * @return Phly_Couch_Document
      */
-    public function getDocument()
+    public function fetchDocument()
     {
         return $this->getDatabase()->docOpen($this->getId());
     }
