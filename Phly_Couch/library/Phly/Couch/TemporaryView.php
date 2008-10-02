@@ -1,5 +1,6 @@
 <?php
 
+// TODO: Probably temporary views can also have the notion of "language"?
 class Phly_Couch_TemporaryView extends Phly_Couch_View
 {
     protected $_map = null;

@@ -5,19 +5,19 @@ class Phly_Couch_Document
 
     protected $_database;
 
-    public function __construct($options = null, $database=null)
+    public function __construct($data = null, $database=null)
     {
-        if (is_string($options)) {
-            if ('{' == substr($options, 0, 1)) {
-                $this->loadJson($options);
+        if (is_string($data)) {
+            if ('{' == substr($data, 0, 1)) {
+                $this->loadJson($data);
             } else {
-                $this->setId($options);
+                $this->setId($data);
             }
-        } elseif (is_array($options)) {
-            $this->loadArray($options);
+        } elseif (is_array($data)) {
+            $this->loadArray($data);
         } else {
             require_once 'Phly/Couch/Exception.php';
-            throw new Phly_Couch_Exception('Invalid options provided to ' . __CLASS__ . 'constructor');
+            throw new Phly_Couch_Exception('Invalid data provided to ' . __CLASS__ . 'constructor');
         }
 
         if($database instanceof Phly_Couch) {
@@ -80,13 +80,14 @@ class Phly_Couch_Document
         return null;
     }
 
-    public function getRevisions()
+    public function fetchRevision($revision)
     {
-        // TODO: This is working total different. Rebuild please
-        if (array_key_exists('_revs_info', $this->_data)) {
-            return $this->_data['_revs_info'];
-        }
-        return null;
+        // TODO: Needs implementation
+    }
+
+    public function fetchAllRevisions()
+    {
+        // TODO: Needs implementation
     }
 
     public function toArray()
@@ -139,5 +140,10 @@ class Phly_Couch_Document
     public function save()
     {
         return $this->getDatabase()->docSave($this, $this->getId());
+    }
+
+    public function remove()
+    {
+        return $this->getDatabase()->docRemove($this);
     }
 }

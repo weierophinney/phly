@@ -12,6 +12,8 @@ class Phly_Couch_View implements Iterator, Countable
 
     protected $_count = null;
 
+    protected $_offset = 0;
+
     protected $_database = null;
 
     /**
@@ -84,13 +86,15 @@ class Phly_Couch_View implements Iterator, Countable
         $response = $this->_prepareAndSend($queryParams);
         $body = Zend_Json::decode($response->getBody());
 
-        if(isset($body['total_rows']) && isset($body['rows']) && isset($body['offset'])) {
+        if(isset($body['total_rows']) && isset($body['rows'])) {
             $this->_count = $body['total_rows'];
             $this->_rows = $body['rows'];
-            $this->_offset = $body['offset'];
+            if(isset($body['offset'])) {
+                $this->_offset = $body['offset'];
+            }
             $this->_fetchedView = true;
         } else {
-            throw new Phly_Couch_Exception("CouchDb Response is not a valid view result.");
+            throw new Phly_Couch_Exception(sprintf("CouchDb Response '%s' is not a valid view result.", $response->getBody()));
         }
         return $this;
     }

@@ -103,7 +103,7 @@ class Phly_Couch
         } else if(is_array($connection)) {
             $this->_connection = new Phly_Couch_Connection($connection);
         } else {
-            throw new Phly_Couch_Exception("Invalid connectin data given for database!");
+            throw new Phly_Couch_Exception("Invalid connection data given for database!");
         }
     }
 
@@ -157,10 +157,7 @@ class Phly_Couch
         $db = $this->getDb();
 
         $response = $this->_prepareAndSend($db, 'GET');
-        if (!$response->isSuccessful()) {
-            require_once 'Phly/Couch/Exception.php';
-            throw new Phly_Couch_Exception(sprintf('Failed querying database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
-        }
+
         require_once 'Phly/Couch/Result.php';
         return new Phly_Couch_Result($response);
     }
@@ -244,19 +241,13 @@ class Phly_Couch
      *
      * @param  string|array|Phly_Couch_Document $document
      * @param  null|string $id
-     * @param  null|string $db
      * @return Phly_Couch_Result
      * @throws Phly_Couch_Exception on failure
      */
-    public function docSave($document, $id = null, $db = null)
+    public function docSave($document)
     {
-        $db     = $this->getDb($db);
+        $db     = $this->getDb();
         $path   = $db . '/';
-        $method = 'POST';
-        if (null !== $id) {
-            $method = 'PUT';
-            $path  .= $id;
-        }
 
         if (is_string($document)) {
             if ('{' != substr($document, 0, 1)) {
@@ -271,6 +262,13 @@ class Phly_Couch
         } elseif (!$document instanceof Phly_Couch_Document) {
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception('Invalid document provided');
+        }
+
+        $method = 'POST';
+        $id = $document->getId();
+        if (null !== $id) {
+            $method = 'PUT';
+            $path  .= $id;
         }
 
         if (null !== $document->getRevision()) {
@@ -301,11 +299,19 @@ class Phly_Couch
             case 201:
             default:
                 require_once 'Phly/Couch/Result.php';
-                return new Phly_Couch_Result($response);
+                $response = new Phly_Couch_Result($response);
                 break;
         }
 
-        // TODO: Make changes to the document class, revision and key for example
+        if($response instanceof Phly_Couch_Result) {
+            $responseData = $response->getInfo();
+            if(isset($responseData["ok"]) && $responseData["ok"] == "true") {
+                $document->setId($responseData["id"]);
+                $document->setRevision($responseData["rev"]);
+            }
+        }
+
+        return $response;
     }
 
     /**
@@ -316,14 +322,20 @@ class Phly_Couch
      * @return Phly_Couch_Result
      * @throws Phly_Couch_Exception on failed call
      */
-    public function docRemove($id, array $options = null)
+    public function docRemove($document, array $options = null)
     {
+        if(!($document instanceof Phly_Couch_Document)) {
+            throw new Phly_Couch_Exception("Given parameter in docRemove() is not of the type document.");
+        }
+
         $db = $this->getDb();
 
-        $response = $this->_prepareAndSend($db . '/' . $id, 'DELETE', $options);
-        if (!$response->isSuccessful()) {
-            require_once 'Phly/Couch/Exception.php';
-            throw new Phly_Couch_Exception(sprintf('Failed deleting document with id "%s" from database "%s"; received response code "%s"', $id, $db, (string) $response->getStatus()));
+        $path = $db . '/' . $document->getId() . '?rev='.$document->getRevision();
+        try {
+            $response = $this->_prepareAndSend($path, 'DELETE', $options);
+            // TODO: Somehow mark document instance as deleted, maybe reset id and revision or throw exceptions on further usage?
+        } catch(Phly_Couch_Connection_Response_Exception $e) {
+            throw new Phly_Couch_Exception(sprintf('Failed deleting document with id "%s" from database "%s"; received response code "%s"', $id, $db, (string) $e->getHttpResponse()->getStatus()));
         }
 
         require_once 'Phly/Couch/Result.php';

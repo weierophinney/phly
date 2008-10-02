@@ -101,11 +101,13 @@ class CouchTest extends PHPUnit_Framework_TestCase
         $document->save();
 
         try {
-            $this->_database->docRemove($document->getId());
-            $this->success();
+            $this->_database->docRemove($document);
         } catch(Exception $e) {
             $this->fail();
         }
+
+        $view = $this->_database->fetchAllDocuments();
+        $this->assertEquals(0, count($view));
     }
 
     public function testTemporaryView()
