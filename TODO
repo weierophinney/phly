@@ -1,17 +1,18 @@
-* !!! Switch usage of Zend_Http_Client to an own simple implementation due to several drawbacks.
+Important for the First Version:
+
 * !!! Write some unit-tests that offer larger "use-case stories" that allow for larger refactorings.
-* Refactor the whole Connection approach, preferably with an own
-  response class that is used instead of the Zend_Http_Response and
-  completly replaces Phly_Couch_Result.
-* Couch::fetchAllDocuments - Suggests a list of documents is returned, but its only the allDocsView. Rename?
-* Identiy Map for Documents: Phly_Couch::enableDocumentStorage(); ?? disable? other name?
-* Couch_View::query() - Complex keys and query structures are probably not supported natively
-  by the current structure of the function. (See: http://www.cmlenz.net/archives/2007/10/couchdb-joins)
+* Couch::fetchAllDocuments - Suggests a list of documents is returned, but its only the
+  allDocsView. Rename?
 * Couch::docOpen - Handle error on loading unknown document.
 * Couch::docRemove - Mark document class (id and revision) as deleted
 * Couch_Document::fetchAllRevisions() and ::fetchRevision()
 * Couch_View::sortByKey() missing
-* Couch_TemporaryView - Language Key missing
+* Couch_TemporaryView::__construct - Language Key missing
 * Couch_DocumentSet - Optional Max Storage Int where an auto update and removal of documents is done.
 * Documentation for all classes and functions
+
+Later Versions:
+
+* Identiy Map for Documents: Phly_Couch::enableDocumentStorage(); ?? disable? other name?
 * Big Todo: Attachments for Documents
+* Reimplement a working Zend_Http_Client somehow

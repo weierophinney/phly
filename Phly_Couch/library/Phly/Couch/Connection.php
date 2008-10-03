@@ -278,9 +278,9 @@ class Phly_Couch_Connection
         $socket = fsockopen($this->_host, $this->_port, $errorNumber, $errorString);
 
         if (!$socket) {
-            require_once 'Phly/Couch/Exception.php';
+            require_once 'Phly/Couch/Connection/Exception.php';
 
-            throw new Phly_Couch_Exception('Failed to open connection to ' . $this->_host . ':' .
+            throw new Phly_Couch_Connection_Exception('Failed to open connection to ' . $this->_host . ':' .
                                            $this->_port . ' (Error number ' . $errorNumber . ': ' .
                                            $errorString . ')');
         }
