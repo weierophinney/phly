@@ -3,6 +3,8 @@
   response class that is used instead of the Zend_Http_Response and
   completly replaces Phly_Couch_Result.
 * Identiy Map for Documents: Phly_Couch::enableDocumentStorage(); ?? disable? other name?
+* Couch_View::query() - Complex keys and query structures are probably not supported natively
+  by the current structure of the function. (See: http://www.cmlenz.net/archives/2007/10/couchdb-joins)
 * Couch::docOpen - Handle error on loading unknown document.
 * Couch::docRemove - Mark document class (id and revision) as deleted
 * Couch_Document::fetchAllRevisions() and ::fetchRevision()
