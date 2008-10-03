@@ -5,7 +5,7 @@ class Phly_Couch_Connection_Response_Exception extends Phly_Couch_Connection_Exc
     protected $_httpResponse = null;
     protected $_httpRequest  = null;
 
-    public function __construct($message, Zend_Http_Response $httpResponse, $httpRequest="")
+    public function __construct($message, Phly_Couch_Response $httpResponse, $httpRequest="")
     {
         $this->_httpResponse = $httpResponse;
         $this->_httpRequest  = $httpRequest;

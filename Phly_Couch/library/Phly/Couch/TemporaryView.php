@@ -17,7 +17,7 @@ class Phly_Couch_TemporaryView extends Phly_Couch_View
     public function setMap($map)
     {
         if(is_string($map)) {
-            $this->_map = $map;
+            $this->_map = str_replace(array("\r", "\n"), '', $map);
         }
         return $this;
     }
@@ -25,7 +25,7 @@ class Phly_Couch_TemporaryView extends Phly_Couch_View
     public function setReduce($reduce)
     {
         if(is_string($reduce) || $reduce === null) {
-            $this->_reduce = $reduce;
+            $this->_reduce = str_replace(array("\r", "\n"), "", $reduce);
         }
         return $this;
     }
@@ -50,7 +50,8 @@ class Phly_Couch_TemporaryView extends Phly_Couch_View
      */
     protected function _prepareAndSend($queryParams = null)
     {
-        if(($reduce = $this->getReduce()) !== null) {
+        $reduce = $this->getReduce();
+        if(strlen($reduce) > 0) {
             $tempViewJson = array("map" => $this->getMap(), "reduce" => $reduce);
         } else {
             $tempViewJson = array("map" => $this->getMap());
@@ -58,7 +59,6 @@ class Phly_Couch_TemporaryView extends Phly_Couch_View
         $tempViewJson = Zend_Json::encode($tempViewJson);
 
         $path = $this->getDatabase()->getDb() . '/_temp_view';
-        $this->getDatabase()->getConnection()->getHttpClient()->setRawData($tempViewJson, 'application/json');
-        return $this->getDatabase()->getConnection()->send($path, 'POST', $queryParams);
+        return $this->getDatabase()->getConnection()->send($path, 'POST', $queryParams, $tempViewJson);
     }
 }

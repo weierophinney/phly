@@ -26,6 +26,11 @@ class CouchTest extends PHPUnit_Framework_TestCase
         $this->_database = new Phly_Couch(array("db" => "couchunittest", 'connection' => $this->_connection));
     }
 
+    public function tearDown()
+    {
+        $this->_connection->dbDrop("couchunittest");
+    }
+
     public function testSetDbName()
     {
         $this->assertEquals("couchunittest", $this->_database->getDb());
@@ -34,8 +39,8 @@ class CouchTest extends PHPUnit_Framework_TestCase
     public function testListDb()
     {
         $result = $this->_connection->fetchAllDatabases();
-        $this->assertTrue($result instanceof Phly_Couch_Result);
-        $this->assertContains('couchunittest', $result->getInfo());
+        $this->assertTrue($result instanceof Phly_Couch_Response);
+        $this->assertContains('couchunittest', $result->getBody());
     }
 
     public function testAllDocs()
@@ -170,10 +175,5 @@ class CouchTest extends PHPUnit_Framework_TestCase
             $this->assertContains("test", $docJson);
             $this->assertEquals($viewRow->rev, $doc->getRevision());
         }
-    }
-
-    public function tearDown()
-    {
-        $this->_connection->dbDrop("couchunittest");
     }
 }

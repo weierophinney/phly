@@ -2,20 +2,16 @@
 
 class Phly_Couch_Connection
 {
+    const CRLF = "\r\n";
+
     /**
      * @var Phly_Couch_Connection
      */
     protected static $_defaultConnection;
 
-    /**
-     * @var Zend_Http_Client HTTP client used for accessing server
-     */
-    protected $_client;
+    protected $_lastRequest;
 
-    /**
-     * @var Zend_Http_Client Default HTTP client to use for CouchDB access
-     */
-    protected static $_defaultClient;
+    protected $_lastResponse;
 
     /**
      * @var string Database host; defaults to 127.0.0.1
@@ -27,7 +23,7 @@ class Phly_Couch_Connection
      */
     protected $_port = 5984;
 
-    public function __construct($options)
+    public function __construct($options, $isDefault = true)
     {
         if($options instanceof Zend_Config) {
             $options = $options->toArray();
@@ -41,8 +37,8 @@ class Phly_Couch_Connection
             $this->setPort($options['port']);
         }
 
-        if(isset($options['http_client'])) {
-            $this->setHttpClient($options['http_client']);
+        if($isDefault === true) {
+            self::setDefaultConnection($this);
         }
     }
 
@@ -90,59 +86,6 @@ class Phly_Couch_Connection
         return $this->_port;
     }
 
-    // HTTP client
-
-    /**
-     * Set HTTP client
-     *
-     * @param  Zend_Http_Client $client
-     * @return Phly_Couch
-     */
-    public function setHttpClient(Zend_Http_Client $client)
-    {
-        $this->_client = $client;
-        return $this;
-    }
-
-    /**
-     * Set default HTTP client
-     *
-     * @param  Zend_Http_Client $client
-     * @return void
-     */
-    public static function setDefaultHttpClient(Zend_Http_Client $client)
-    {
-        self::$_defaultClient = $client;
-    }
-
-    /**
-     * Get current HTTP client
-     *
-     * @return Zend_Http_Client
-     */
-    public function getHttpClient()
-    {
-        if (null === $this->_client) {
-            $client = self::getDefaultHttpClient();
-            if (null === $client) {
-                require_once 'Zend/Http/Client.php';
-                $client = new Zend_Http_Client;
-            }
-            $this->setHttpClient($client);
-        }
-        return $this->_client;
-    }
-
-    /**
-     * Retrieve default HTTP client
-     *
-     * @return null|Zend_Http_Client
-     */
-    public static function getDefaultHttpClient()
-    {
-        return self::$_defaultClient;
-    }
-
     /**
      * Return default connection
      *
@@ -173,7 +116,7 @@ class Phly_Couch_Connection
     /**
      * Get server information
      *
-     * @return Phly_Couch_Result
+     * @return Phly_Couch_Response
      */
     public function serverInfo()
     {
@@ -184,14 +127,13 @@ class Phly_Couch_Connection
             throw new Phly_Couch_Exception(sprintf('Failed retrieving server information; received response code "%s"', (string) $response->getStatus()));
         }
 
-        require_once 'Phly/Couch/Result.php';
-        return new Phly_Couch_Result($response);
+        return $response;
     }
 
     /**
      * Get list of all databases
      *
-     * @return Phly_Couch_Result
+     * @return Phly_Couch_Response
      */
     public function fetchAllDatabases()
     {
@@ -200,15 +142,14 @@ class Phly_Couch_Connection
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception(sprintf('Failed retrieving database list; received response code "%s"', (string) $response->getStatus()));
         }
-        require_once 'Phly/Couch/Result.php';
-        return new Phly_Couch_Result($response);
+        return $response;
     }
 
     /**
      * Create database
      *
      * @param  string $db
-     * @return Phly_Couch_Result
+     * @return Phly_Couch_Response
      * @throws Phly_Couch_Exception when fails or invalid database name
      */
     public function dbCreate($db = null)
@@ -219,15 +160,14 @@ class Phly_Couch_Connection
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception(sprintf('Failed creating database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
         }
-        require_once 'Phly/Couch/Result.php';
-        return new Phly_Couch_Result($response);
+        return $response;
     }
 
     /**
      * Drop database
      *
      * @param  string $db
-     * @return Phly_Couch_Result
+     * @return Phly_Couch_Response
      * @throws Phly_Couch_Exception when fails
      */
     public function dbDrop($db = null)
@@ -238,8 +178,7 @@ class Phly_Couch_Connection
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception(sprintf('Failed dropping database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
         }
-        require_once 'Phly/Couch/Result.php';
-        return new Phly_Couch_Result($response);
+        return $response;
     }
 
     /**
@@ -259,9 +198,46 @@ class Phly_Couch_Connection
         return $db;
     }
 
-    public function send($path, $method, $queryParams)
+    /**
+     * Send Request to CouchDB
+     *
+     * @param string      $path
+     * @param string      $method
+     * @param null|array  $queryParams
+     * @param null|string $rawData
+     * @return Phly_Couch_Response
+     */
+    public function send($path, $method, $queryParams=null, $rawData=null)
     {
-        return $this->_prepareAndSend($path, $method, $queryParams);
+        return $this->_prepareAndSend($path, $method, $queryParams, $rawData);
+    }
+
+    /**
+     * From Url, method and data build the raw request.
+     *
+     * @param  string      $url
+     * @param  string      $method
+     * @param  null|string $data
+     * @return string      $request
+     */
+    protected function _buildRawRequest($url, $method, $data=null)
+    {
+        $method = strtoupper($method);
+
+        $request = $method . ' ' . $url . ' HTTP/1.0' . self::CRLF;
+
+        $date = new DateTime();
+        $request .= 'Date: ' . $date->format('r') . self::CRLF;
+
+        if($data !== null) {
+            $request .= 'Content-Length: ' . strlen($data) . self::CRLF;
+            $request .= 'Content-Type: application/json' . self::CRLF . self::CRLF;
+            $request .= $data;
+        }
+
+        $request .= self::CRLF;
+
+        return $request;
     }
 
     /**
@@ -270,34 +246,74 @@ class Phly_Couch_Connection
      * @param  string $path
      * @param  string $method
      * @param  null|array $queryParams
+     * @param  null|string $rawData
      * @return Zend_Http_Response
      */
-    protected function _prepareAndSend($path, $method, array $queryParams = null)
+    protected function _prepareAndSend($path, $method, array $queryParams = null, $rawData = null)
     {
-        $client = $this->getHttpClient();
-        $this->_prepareUri($path, $queryParams);
-        $response = $client->request($method);
-        $client->resetParameters();
+        // Build Request
+        if(strpos($path, '/') !== 0) {
+            $path = '/' . $path;
+        }
 
-        if (!$response->isSuccessful()) {
+        if(count($queryParams) > 0) {
+            $queryString = array();
+            foreach($queryParams AS $k => $v) {
+                if(is_bool($v)) {
+                    $v = ($v)?"true":"false";
+                } else {
+                    $v = Zend_Json::encode($v);
+                }
+                $queryString[] = $k . '=' .$v;
+            }
+            $path = $path . '?' . implode("&", $queryString);
+        }
+
+        $request = $this->_buildRawRequest($path, $method, $rawData);
+
+        $errorString = '';
+        $errorNumber = '';
+        $response    = '';
+
+        $socket = fsockopen($this->_host, $this->_port, $errorNumber, $errorString);
+
+        if (!$socket) {
+            require_once 'Phly/Couch/Exception.php';
+
+            throw new Phly_Couch_Exception('Failed to open connection to ' . $this->_host . ':' .
+                                           $this->_port . ' (Error number ' . $errorNumber . ': ' .
+                                           $errorString . ')');
+        }
+
+        fwrite($socket, $request);
+
+        while (!feof($socket)) {
+            $response .= fgets($socket);
+        }
+
+        fclose($socket);
+
+        $socket = null;
+
+        $response = new Phly_Couch_Response($response);
+        $this->_lastRequest = $request;
+        $this->_lastResponse = $response;
+
+        // Throw detailed exception on all unsuccessful queries.
+        if(!$response->isSuccessful()) {
             $body = $response->getBody();
             $errorMessage = "";
             $reason = "";
-            try {
-                $body = Zend_Json::decode($body);
-                if(isset($body['error']) && isset($body['reason'])) {
-                    $errorMessage = $body['error'];
-                    $reason       = $body['reason'];
-                }
-            } catch(Zend_Json_Exception $e) {
-                $errorMessage = "(No Error Response from CouchDB)";
+            if(isset($body['error']) && isset($body['reason'])) {
+                $errorMessage = $body['error'];
+                $reason = $body['reason'];
             }
 
-            require_once 'Phly/Couch/Connection/Response/Exception.php';
+            require "Phly/Couch/Connection/Response/Exception.php";
             throw new Phly_Couch_Connection_Response_Exception(
                 sprintf('Failed query "%s" (response: "%s") with message: %s - %s', $path, (string) $response->getStatus(), $errorMessage, $reason),
                 $response,
-                $this->getHttpClient()->getLastRequest()
+                $request
             );
         }
 
@@ -305,25 +321,22 @@ class Phly_Couch_Connection
     }
 
     /**
-     * Prepare the URI
+     * Return last request
      *
-     * @param  string $path
-     * @param  null|array $queryParams
-     * @return void
+     * @return string
      */
-    protected function _prepareUri($path, array $queryParams = null)
+    public function getLastRequest()
     {
-        $client = $this->getHttpClient();
-        $uri    = 'http://' . $this->getHost() . ':' . $this->getPort() . '/' . $path;
+        return $this->_lastRequest;
+    }
 
-        $client->setUri($uri);
-        if (null !== $queryParams) {
-            foreach ($queryParams as $key => $value) {
-                if (is_bool($value)) {
-                    $queryParams[$key] = ($value) ? 'true' : 'false';
-                }
-            }
-            $client->setParameterGet($queryParams);
-        }
+    /**
+     * Return last response
+     *
+     * @return Phly_Couch_Response
+     */
+    public function getLastResponse()
+    {
+        return $this->_lastResponse;
     }
 }

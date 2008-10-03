@@ -129,37 +129,32 @@ class Phly_Couch
      * Compact a database
      *
      * @param  null|string $db
-     * @r-eturn Phly_Couch_Result
+     * @r-eturn Phly_Couch_Response
      * @throws Phly_Couch_Exception when fails or no database specified
      */
     public function compact()
     {
         $db = $this->getDb();
         $response = $this->_prepareAndSend($db . '/_compact', 'POST');
-        $status = $response->getStatus();
-        if (202 !== $status) {
+        if (202 !== $response->getStatus()) {
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception(sprintf('Failed compacting database "%s": received response code "%s"', $db, (string) $response->getStatus()));
         }
-        require_once 'Phly/Couch/Result.php';
-        return new Phly_Couch_Result($response);
+        return $response;
     }
 
     /**
      * Get database info
      *
      * @param  string $db
-     * @return Phly_Couch_Result
+     * @return Phly_Couch_Response
      * @throws Phly_Couch_Exception when fails
      */
     public function info()
     {
         $db = $this->getDb();
 
-        $response = $this->_prepareAndSend($db, 'GET');
-
-        require_once 'Phly/Couch/Result.php';
-        return new Phly_Couch_Result($response);
+        return $this->_prepareAndSend($db, 'GET');
     }
 
     // Document API methods
@@ -212,6 +207,20 @@ class Phly_Couch
     }
 
     /**
+     * Return a new document with the given data as initials.
+     *
+     * This document is not saved into the database until you explicitly
+     * do that by $document->save(); or $database->docSave($document);
+     *
+     * @param array $data
+     * @return unknown
+     */
+    public function docNew(array $data=array())
+    {
+        return new Phly_Couch_Document($data, $this);
+    }
+
+    /**
      * Open a document
      *
      * @param  string $id
@@ -241,7 +250,7 @@ class Phly_Couch
      *
      * @param  string|array|Phly_Couch_Document $document
      * @param  null|string $id
-     * @return Phly_Couch_Result
+     * @return Phly_Couch_Response
      * @throws Phly_Couch_Exception on failure
      */
     public function docSave($document)
@@ -280,8 +289,7 @@ class Phly_Couch
         }
 
         try {
-            $this->getConnection()->getHttpClient()->setRawData($document->toJson());
-            $response = $this->_prepareAndSend($path, $method);
+            $response = $this->_prepareAndSend($path, $method, null, $document->toJson());
             $status   = $response->getStatus();
         } catch(Phly_Couch_Connection_Response_Exception $e) {
             $status = $e->getHttpResponse()->getStatus();
@@ -298,13 +306,11 @@ class Phly_Couch
                 break;
             case 201:
             default:
-                require_once 'Phly/Couch/Result.php';
-                $response = new Phly_Couch_Result($response);
                 break;
         }
 
-        if($response instanceof Phly_Couch_Result) {
-            $responseData = $response->getInfo();
+        if($response instanceof Phly_Couch_Response) {
+            $responseData = $response->getBody();
             if(isset($responseData["ok"]) && $responseData["ok"] == "true") {
                 $document->setId($responseData["id"]);
                 $document->setRevision($responseData["rev"]);
@@ -319,7 +325,7 @@ class Phly_Couch
      *
      * @param  string $id
      * @param  array $options
-     * @return Phly_Couch_Result
+     * @return Phly_Couch_Response
      * @throws Phly_Couch_Exception on failed call
      */
     public function docRemove($document, array $options = null)
@@ -338,8 +344,7 @@ class Phly_Couch
             throw new Phly_Couch_Exception(sprintf('Failed deleting document with id "%s" from database "%s"; received response code "%s"', $id, $db, (string) $e->getHttpResponse()->getStatus()));
         }
 
-        require_once 'Phly/Couch/Result.php';
-        return new Phly_Couch_Result($response);
+        return $response;
     }
 
     /**
@@ -347,7 +352,7 @@ class Phly_Couch
      *
      * @param  array|Phly_Couch_DocumentSet $documents
      * @param  array $options
-     * @return Phly_Couch_Result
+     * @return Phly_Couch_Response
      * @throws Phly_Couch_Exception on failed save
      */
     public function docBulkSave($documents, array $options = null)
@@ -362,15 +367,13 @@ class Phly_Couch
             throw new Phly_Couch_Exception('Invalid document set provided to bulk save operation');
         }
 
-        $this->getConnection()->getHttpClient()->setRawData($documents->toJson());
-        $response = $this->_prepareAndSend($db . '/_bulk_docs', 'POST', $options);
+        $response = $this->_prepareAndSend($db . '/_bulk_docs', 'POST', $options, $documents->toJson());
         if (!$response->isSuccessful()) {
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception(sprintf('Failed deleting document with id "%s" from database "%s"; received response code "%s"', $id, $db, (string) $response->getStatus()));
         }
 
-        require_once 'Phly/Couch/Result.php';
-        return new Phly_Couch_Result($response);
+        return $response;
     }
 
     /**
@@ -379,10 +382,11 @@ class Phly_Couch
      * @param  string $path
      * @param  string $method
      * @param  null|array $queryParams
+     * @param  null|string $rawData
      * @return Zend_Http_Response
      */
-    protected function _prepareAndSend($path, $method, array $queryParams = null)
+    protected function _prepareAndSend($path, $method, array $queryParams = null, $rawData=null)
     {
-        return $this->getConnection()->send($path, $method, $queryParams);
+        return $this->getConnection()->send($path, $method, $queryParams, $rawData);
     }
 }

@@ -84,18 +84,23 @@ class Phly_Couch_View implements Iterator, Countable
     public function query(array $queryParams=array())
     {
         $response = $this->_prepareAndSend($queryParams);
-        $body = Zend_Json::decode($response->getBody());
+        $body = $response->getBody();
 
-        if(isset($body['total_rows']) && isset($body['rows'])) {
-            $this->_count = $body['total_rows'];
+        // only common thing between views and temp views is the rows key.
+        if(isset($body['rows'])) {
+            $this->_fetchedView = true;
             $this->_rows = $body['rows'];
             if(isset($body['offset'])) {
                 $this->_offset = $body['offset'];
             }
-            $this->_fetchedView = true;
+            if(isset($body['total_rows'])) {
+                $this->_count = $body['total_rows'];
+            }
         } else {
             throw new Phly_Couch_Exception(sprintf("CouchDb Response '%s' is not a valid view result.", $response->getBody()));
         }
+        #var_dump($this->getDatabase()->getConnection()->getLastRequest());
+        #var_dump($this->getDatabase()->getConnection()->getLastResponse());
         return $this;
     }
 
