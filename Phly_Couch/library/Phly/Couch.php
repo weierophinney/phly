@@ -166,7 +166,7 @@ class Phly_Couch
      * @return Phly_Couch_View
      * @throws Phly_Couch_Exception on failure or bad db
      */
-    public function fetchAllDocuments(array $options = null)
+    public function fetchAllDocumentsView(array $options = null)
     {
         return $this->fetchView('_all_docs');
     }
@@ -181,9 +181,7 @@ class Phly_Couch
     public function fetchView($viewName, array $queryParams=array())
     {
         $view = new Phly_Couch_View($viewName, $this);
-        if(count($queryParams) > 0) {
-            $view->query($queryParams);
-        }
+        $view->query($queryParams);
 
         return $view;
     }
@@ -194,14 +192,12 @@ class Phly_Couch
      * @param string $map
      * @param string $reduce
      * @param array $queryParams
-     * @return Phly_Couch_View
+     * @return Phly_Couch_TemporaryView
      */
     public function fetchTemporaryView($map, $reduce=null, array $queryParams=array())
     {
         $view = new Phly_Couch_TemporaryView($map, $reduce, $this);
-        if(count($queryParams) > 0) {
-            $view->query($queryParams);
-        }
+        $view->query($queryParams);
 
         return $view;
     }

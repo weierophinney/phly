@@ -26,6 +26,7 @@ class Phly_Couch_DesignDocument extends Phly_Couch_Document
             throw new Phly_Couch_Exception(sprintf("There is already a view '%s' in the design document '%s'.", $name, $this->getId()));
         }
         $this->setView($name, $map, $reduce);
+        return $this;
     }
 
     public function setView($name, $map, $reduce=null)
@@ -36,6 +37,7 @@ class Phly_Couch_DesignDocument extends Phly_Couch_Document
             $mapReduce = array('map' => $map, 'reduce' => $reduce);
         }
         $this->_data['views'][$name] = $mapReduce;
+        return $this;
     }
 
     /**

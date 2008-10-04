@@ -51,7 +51,7 @@ class CouchTest extends PHPUnit_Framework_TestCase
         $document = new Phly_Couch_Document(array('bar' => 'foo', 'test' => 'baz'));
         $this->_database->docSave($document);
 
-        $result = $this->_database->fetchAllDocuments();
+        $result = $this->_database->fetchAllDocumentsView();
         $this->assertTrue($result instanceof Phly_Couch_View);
 
         $result2 = $this->_database->fetchView('_all_docs');
@@ -111,7 +111,7 @@ class CouchTest extends PHPUnit_Framework_TestCase
             $this->fail();
         }
 
-        $view = $this->_database->fetchAllDocuments();
+        $view = $this->_database->fetchAllDocumentsView();
         $this->assertEquals(0, count($view));
     }
 
@@ -155,7 +155,7 @@ class CouchTest extends PHPUnit_Framework_TestCase
             $this->fail();
         }
 
-        $allDocs = $this->_database->fetchAllDocuments();
+        $allDocs = $this->_database->fetchAllDocumentsView();
 
         try {
             $designDoc = $allDocs->fetchDesignDocument();

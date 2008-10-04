@@ -66,21 +66,25 @@ class CouchStoriesTest extends PHPUnit_Framework_TestCase
         $database->docSave($blogPost2);
 
         // Step2: Iterate over all results of the allDocs view
-        $view = $database->fetchAllDocuments();
+        $view = $database->fetchAllDocumentsView();
         $this->assertEquals(2, count($view));
         foreach($view AS $viewRow) {
             $this->assertContains($viewRow->getId(), array('jackslug', 'johnslug'));
         }
 
         // Step3: Create some results in temorary views: Request all comments of "john"
-        $map = "function(doc) { log(doc);
+        $map = "function(doc) {
   for (var i in doc.comments) {
-    emit(doc.comments[i].author, doc.comments[i].content);
+    emit(doc.comments[i].author, doc.comments[i].comment);
   }
 }";
-        $tempView = $database->fetchTemporaryView($map, null, array('key' => 'john'));
-        $tempView->query();
+        $tempView = $database->fetchTemporaryView($map, null, array('key' => 'jack'));
 
-        $this->assertEquals(3, count($tempView));
+        $this->assertEquals(2, count($tempView));
+        foreach($tempView AS $viewRow) {
+            $this->assertEquals("jack", $viewRow->getKey());
+            $this->assertContains($viewRow->getData(), array('really!', 'thats great!'));
+            $this->assertContains($viewRow->getId(), array('johnslug', 'jackslug'));
+        }
     }
 }

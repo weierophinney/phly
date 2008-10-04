@@ -83,8 +83,6 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
         } else {
             throw new Phly_Couch_Exception(sprintf("CouchDb Response '%s' is not a valid view result.", $response->getBody()));
         }
-        #var_dump($this->getDatabase()->getConnection()->getLastRequest());
-        #var_dump($this->getDatabase()->getConnection()->getLastResponse());
         return $this;
     }
 
