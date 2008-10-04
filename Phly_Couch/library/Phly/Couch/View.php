@@ -4,7 +4,9 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
 {
     protected $_viewUri;
 
-    protected $_designDocument = null;
+    protected $_designDocument;
+
+    protected $_designDocumentName;
 
     protected $_fetchedView = false;
 
@@ -32,7 +34,7 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
 
         if($viewUri !== "_all_docs") {
             $parts = explode("/", $viewUri);
-            $this->_designDocument = "_design/".$parts[1];
+            $this->_designDocumentName = "_design/".$parts[1];
         }
 
         if($database instanceof Phly_Couch) {
@@ -40,22 +42,31 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
         }
     }
 
+    /**
+     * Return name of the corresponding designDocument of this view.
+     *
+     * @return string
+     */
     public function getDesignDocumentName()
     {
-        return $this->_designDocument;
+        return $this->_designDocumentName;
     }
 
     /**
-     * Return design document that defined this view
+     * Return design document that defined this view.
      *
-     * @return Phly_Couch_Document
+     * @throws Phly_Couch_Exception - When view has no design document, for example _all_docs
+     * @return Phly_Couch_DesignDocument
      */
     public function fetchDesignDocument()
     {
         if($this->_designDocument === null) {
-            throw new Phly_Couch_Exception(sprintf("View '%s' has no design document.", $this->_viewUri));
+            if($this->getDesignDocumentName() === null) {
+                throw new Phly_Couch_Exception(sprintf("View '%s' has no design document.", $this->_viewUri));
+            }
+            $this->_designDocument = $this->_database->docOpen($this->getDesignDocumentName());
         }
-        return $this->_database->docOpen($this->_designDocument);
+        return $this->_designDocument;
     }
 
     /**
@@ -81,7 +92,7 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
                 $this->_count = $body['total_rows'];
             }
         } else {
-            throw new Phly_Couch_Exception(sprintf("CouchDb Response '%s' is not a valid view result.", $response->getBody()));
+            throw new Phly_Couch_Exception(sprintf("CouchDB Response '%s' is not a valid view result.", $body));
         }
         return $this;
     }
@@ -114,11 +125,21 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
         return count($this->_rows);
     }
 
+    /**
+     * Return the total count of documents this view contains.
+     *
+     * @return int
+     */
     public function getTotalDocumentCount()
     {
         return $this->_count;
     }
 
+    /**
+     * Return current element of view
+     *
+     * @return Phly_Couch_ViewRow|boolean
+     */
     public function current()
     {
         if($this->_fetchedView === false) {
@@ -134,6 +155,11 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
         }
     }
 
+    /**
+     * Return key of the current element
+     *
+     * @return integer
+     */
     public function key()
     {
         if($this->_fetchedView === false) {
@@ -143,6 +169,11 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
         return key($this->_rows);
     }
 
+    /**
+     * Advance to next element of view
+     *
+     * @return mixed
+     */
     public function next()
     {
         if($this->_fetchedView === false) {
@@ -152,6 +183,11 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
         return next($this->_rows);
     }
 
+    /**
+     * Reset view results
+     *
+     * @return mixed
+     */
     public function rewind()
     {
         if($this->_fetchedView === false) {
@@ -161,6 +197,11 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
         return reset($this->_rows);
     }
 
+    /**
+     * Check if there is still a valid result in the view
+     *
+     * @return boolean
+     */
     public function valid()
     {
         if($this->_fetchedView === false) {
