@@ -7,11 +7,13 @@ class Phly_Couch_TemporaryView extends Phly_Couch_View
 
     protected $_reduce = null;
 
-    public function __construct($map, $reduce=null, Phly_Couch $database=null)
+    public function __construct($map, $reduce=null, $database=null)
     {
         $this->setMap($map);
         $this->setReduce($reduce);
-        $this->setDatabase($database);
+        if($database instanceof Phly_Couch) {
+            $this->setDatabase($database);
+        }
     }
 
     public function setMap($map)

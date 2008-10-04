@@ -1,6 +1,6 @@
 <?php
 
-class Phly_Couch_View implements Iterator, Countable
+class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
 {
     protected $_viewUri;
 
@@ -14,8 +14,6 @@ class Phly_Couch_View implements Iterator, Countable
 
     protected $_offset = 0;
 
-    protected $_database = null;
-
     /**
      * Create a new view object that acts as an iterator over all documents.
      *
@@ -25,7 +23,7 @@ class Phly_Couch_View implements Iterator, Countable
      * @param unknown_type $viewUri
      * @param Phly_Couch $database
      */
-    public function __construct($viewUri, Phly_Couch $database)
+    public function __construct($viewUri, $database)
     {
         if($viewUri !== "_all_docs" && !strpos($viewUri, "_design/")) {
             $viewUri = "_design/".$viewUri;
@@ -37,23 +35,9 @@ class Phly_Couch_View implements Iterator, Countable
             $this->_designDocument = "_design/".$parts[1];
         }
 
-        if($database !== null) {
+        if($database instanceof Phly_Couch) {
             $this->setDatabase($database);
         }
-    }
-
-    public function setDatabase(Phly_Couch $database)
-    {
-        $this->_database = $database;
-        return $this;
-    }
-
-    public function getDatabase()
-    {
-        if($this->_database === null) {
-            throw new Phly_Couch_Exception("Database is not set in view.");
-        }
-        return $this->_database;
     }
 
     public function getDesignDocumentName()

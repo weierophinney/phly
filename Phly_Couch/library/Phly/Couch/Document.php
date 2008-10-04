@@ -1,5 +1,5 @@
 <?php
-class Phly_Couch_Document
+class Phly_Couch_Document extends Phly_Couch_Element
 {
     protected $_data = array();
 
@@ -9,12 +9,12 @@ class Phly_Couch_Document
     {
         if (is_string($data)) {
             if ('{' == substr($data, 0, 1)) {
-                $this->loadJson($data);
+                $this->fromJson($data);
             } else {
                 $this->setId($data);
             }
         } elseif (is_array($data)) {
-            $this->loadArray($data);
+            $this->fromArray($data);
         } else {
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception('Invalid data provided to ' . __CLASS__ . 'constructor');
@@ -23,19 +23,6 @@ class Phly_Couch_Document
         if($database instanceof Phly_Couch) {
             $this->setDatabase($database);
         }
-    }
-
-    public function setDatabase(Phly_Couch $database)
-    {
-        $this->_database = $database;
-    }
-
-    public function getDatabase()
-    {
-        if($this->_database === null) {
-            throw new Phly_Couch_Exception(sprintf("No database set for document with id '%s'!", $this->getId()));
-        }
-        return $this->_database;
     }
 
     public function setId($id)
@@ -95,7 +82,7 @@ class Phly_Couch_Document
         return $this->_data;
     }
 
-    public function loadArray(array $array)
+    public function fromArray(array $array)
     {
         $this->_data = $array;
         return $this;
@@ -107,9 +94,9 @@ class Phly_Couch_Document
         return Zend_Json::encode($this->_data);
     }
 
-    public function loadJson($json)
+    public function fromJson($json)
     {
-        return $this->loadArray(Zend_Json::decode($json));
+        return $this->fromArray(Zend_Json::decode($json));
     }
 
     public function __get($name)

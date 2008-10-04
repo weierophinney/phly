@@ -1,15 +1,19 @@
 <?php
 // TODO: Could implement a max documents integer that when being hit updates all the docs and removes them from the set
-class Phly_Couch_DocumentSet implements Iterator,Countable
+class Phly_Couch_DocumentSet extends Phly_Couch_Element implements Iterator,Countable
 {
     protected $_documents = array();
 
-    public function __construct($options = null)
+    public function __construct($options = null, $database=null)
     {
         if (is_string($options)) {
-            $this->loadJson($options);
+            $this->fromJson($options);
         } elseif (is_array($options)) {
-            $this->loadArray($options);
+            $this->fromArray($options);
+        }
+
+        if($database instanceof Phly_Couch) {
+            $this->setDatabase($database);
         }
     }
 
@@ -61,6 +65,11 @@ class Phly_Couch_DocumentSet implements Iterator,Countable
         return $this;
     }
 
+    public function bulkSave()
+    {
+        return $this->getDatabase()->docBulkSave($this);
+    }
+
     public function toArray()
     {
         $documents = array();
@@ -71,7 +80,7 @@ class Phly_Couch_DocumentSet implements Iterator,Countable
         return $array;
     }
 
-    public function loadArray(array $array)
+    public function fromArray(array $array)
     {
         if (array_key_exists('rows', $array)) {
             $array = $array['rows'];
@@ -88,10 +97,10 @@ class Phly_Couch_DocumentSet implements Iterator,Countable
         return Zend_Json::encode($this->toArray());
     }
 
-    public function loadJson($json)
+    public function fromJson($json)
     {
         require_once 'Zend/Json.php';
-        return $this->loadArray(Zend_Json::decode($json));
+        return $this->fromArray(Zend_Json::decode($json));
     }
 
     public function count()

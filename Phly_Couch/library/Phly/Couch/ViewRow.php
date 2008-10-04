@@ -1,6 +1,6 @@
 <?php
 
-class Phly_Couch_ViewRow
+class Phly_Couch_ViewRow extends Phly_Couch_Element
 {
     protected $_id = null;
 
@@ -10,13 +10,13 @@ class Phly_Couch_ViewRow
 
     protected $_database;
 
-    public function __construct($data, Phly_Couch $database=null)
+    public function __construct($data, $database=null)
     {
         $this->_data = $data['value'];
         $this->_key  = $data['key'];
         $this->_id   = $data['id'];
 
-        if($database !== null) {
+        if($database instanceof Phly_Couch) {
             $this->setDatabase($database);
         }
     }
@@ -86,25 +86,5 @@ class Phly_Couch_ViewRow
     public function fetchDocument()
     {
         return $this->getDatabase()->docOpen($this->getId());
-    }
-
-    /**
-     * Set Database this View Row belongs to.
-     *
-     * @param Phly_Couch $database
-     * @return Phly_Couch_ViewRow
-     */
-    public function setDatabase(Phly_Couch $database)
-    {
-        $this->_database = $database;
-        return $this;
-    }
-
-    public function getDatabase()
-    {
-        if($this->_database === null) {
-            throw new Phly_Couch_Exception("ViewRow is not associated with a database.");
-        }
-        return $this->_database;
     }
 }
