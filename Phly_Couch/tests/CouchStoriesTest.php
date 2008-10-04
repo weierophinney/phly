@@ -81,7 +81,7 @@ class CouchStoriesTest extends PHPUnit_Framework_TestCase
         $tempView = $database->fetchTemporaryView($map, null, array('key' => 'jack'));
 
         $this->assertEquals(2, count($tempView));
-        foreach($tempView AS $viewRow) {
+        foreach($tempView AS $key => $viewRow) {
             $this->assertEquals("jack", $viewRow->getKey());
             $this->assertContains($viewRow->getData(), array('really!', 'thats great!'));
             $this->assertContains($viewRow->getId(), array('johnslug', 'jackslug'));

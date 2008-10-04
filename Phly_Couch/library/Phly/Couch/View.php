@@ -87,16 +87,6 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
     }
 
     /**
-     * Couch Views return a key field that is primarily designed for sorting by.
-     *
-     * @return boolean
-     */
-    public function sortByKey()
-    {
-        // TODO: Sort View Rows by Couch returned key names
-    }
-
-    /**
      * Return the complete View Json Response as an array
      *
      * @return array
@@ -104,7 +94,7 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
     public function toArray()
     {
         if($this->_fetchedView === false) {
-            $this->query(array());
+            $this->query();
         }
 
         return array('total_rows' => $this->_count, 'offset' => $this->_offset, 'rows' => $this->_rows);
@@ -118,7 +108,7 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
     public function count()
     {
         if($this->_fetchedView === false) {
-            $this->query(array());
+            $this->query();
         }
 
         return count($this->_rows);
@@ -132,7 +122,7 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
     public function current()
     {
         if($this->_fetchedView === false) {
-            $this->query(array());
+            $this->query();
         }
 
         $doc = current($this->_rows);
@@ -147,7 +137,7 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
     public function key()
     {
         if($this->_fetchedView === false) {
-            $this->query(array());
+            $this->query();
         }
 
         return key($this->_rows);
@@ -156,7 +146,7 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
     public function next()
     {
         if($this->_fetchedView === false) {
-            $this->query(array());
+            $this->query();
         }
 
         return next($this->_rows);
@@ -165,7 +155,7 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
     public function rewind()
     {
         if($this->_fetchedView === false) {
-            $this->query(array());
+            $this->query();
         }
 
         return reset($this->_rows);
@@ -174,7 +164,7 @@ class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
     public function valid()
     {
         if($this->_fetchedView === false) {
-            $this->query(array());
+            $this->query();
         }
 
         return $this->current() !== false;
