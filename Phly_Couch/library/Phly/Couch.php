@@ -316,6 +316,7 @@ class Phly_Couch
                 $document->setRevision($responseData["rev"]);
             }
         }
+        unset($document);
 
         return $response;
     }
