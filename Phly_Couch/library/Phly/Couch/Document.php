@@ -1,11 +1,26 @@
 <?php
 class Phly_Couch_Document extends Phly_Couch_Element
 {
+    /**
+     * Document data
+     *
+     * @var array
+     */
     protected $_data = array();
 
+    /**
+     * Revision information of document
+     *
+     * @var array|nuull
+     */
     protected $_revs_info = null;
 
-    protected $_database;
+    /**
+     * Attachments of this document
+     *
+     * @var array
+     */
+    protected $_attachments;
 
     /**
      * Construct new document

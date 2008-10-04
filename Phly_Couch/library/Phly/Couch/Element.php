@@ -2,6 +2,11 @@
 
 class Phly_Couch_Element
 {
+    /**
+     * Couch Database
+     *
+     * @var Phly_Couch
+     */
     protected $_database = null;
 
     /**

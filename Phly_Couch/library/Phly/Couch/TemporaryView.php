@@ -3,8 +3,18 @@
 // TODO: Probably temporary views can also have the notion of "language"?
 class Phly_Couch_TemporaryView extends Phly_Couch_View
 {
+    /**
+     * Temporary view map function
+     *
+     * @var string
+     */
     protected $_map = null;
 
+    /**
+     * Temporary view reduce function
+     *
+     * @var string|null
+     */
     protected $_reduce = null;
 
     /**

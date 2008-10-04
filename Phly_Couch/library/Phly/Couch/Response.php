@@ -38,7 +38,7 @@ class Phly_Couch_Response implements Iterator, Countable
     /**
      * Constructor
      *
-     * @param string $response
+     * @param string $rawResponse
      */
     public function __construct($rawResponse)
     {
@@ -120,7 +120,7 @@ class Phly_Couch_Response implements Iterator, Countable
      * Get a specific header.
      * Returns null when the header doesn't exist
      *
-     * @param string $header
+     * @param  string $header
      * @return string|null
      */
     public function getHeader($header)
@@ -132,6 +132,15 @@ class Phly_Couch_Response implements Iterator, Countable
         return null;
     }
 
+    /**
+     * Get body element of the response by name.
+     *
+     * Since body is a JSON object in the CouchDB context, this accesses the deserialized
+     * JSON array.
+     *
+     * @param  string $name
+     * @return null|string|array|integer
+     */
     public function __get($name)
     {
         if (isset($this->$name)) {
@@ -140,6 +149,12 @@ class Phly_Couch_Response implements Iterator, Countable
         return null;
     }
 
+    /**
+     * Check if a given key is element of the response
+     *
+     * @param  string $name
+     * @return boolean
+     */
     public function __isset($name)
     {
         return array_key_exists($name, $this->_body);
@@ -165,31 +180,61 @@ class Phly_Couch_Response implements Iterator, Countable
         return $this->getRawResponse();
     }
 
+    /**
+     * Count number of elements in the JSON response of CouchDB.
+     *
+     * @return int
+     */
     public function count()
     {
         return count($this->_body);
     }
 
+    /**
+     * Return current element of JSON response.
+     *
+     * @return string|array|integer|boolean
+     */
     public function current()
     {
         return current($this->_body);
     }
 
+    /**
+     * Return key of current JSON response.
+     *
+     * @return string|integer
+     */
     public function key()
     {
         return key($this->_body);
     }
 
+    /**
+     * Return next element of JSON response.
+     *
+     * @return string|array|integer|boolean
+     */
     public function next()
     {
         return next($this->_body);
     }
 
+    /**
+     * Reset array pointer of current JSON response.
+     *
+     * @return
+     */
     public function rewind()
     {
         return reset($this->_body);
     }
 
+    /**
+     * Check if array pointer is valid.
+     *
+     * @return boolean
+     */
     public function valid()
     {
         return $this->current() !== false;

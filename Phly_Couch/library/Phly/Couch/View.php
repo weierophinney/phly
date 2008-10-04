@@ -2,18 +2,53 @@
 
 class Phly_Couch_View extends Phly_Couch_Element implements Iterator, Countable
 {
+    /**
+     * Uri of the view including the _design part and design document name
+     *
+     * @var string
+     */
     protected $_viewUri;
 
+    /**
+     * Design document that this view belongs to.
+     *
+     * @var Phly_Couch_DesignDocument
+     */
     protected $_designDocument;
 
+    /**
+     * Name of the design document this view belongs to.
+     *
+     * @var string
+     */
     protected $_designDocumentName;
 
+    /**
+     * Results of the View are lazy loaded. This is the boolean indicator.
+     *
+     * @var boolean
+     */
     protected $_fetchedView = false;
 
+    /**
+     * View result rows
+     *
+     * @var array
+     */
     protected $_rows = array();
 
+    /**
+     * Total Rows indicator of a view result.
+     *
+     * @var integer
+     */
     protected $_count = null;
 
+    /**
+     * Offset indicator of a view result.
+     *
+     * @var unknown_type
+     */
     protected $_offset = 0;
 
     /**
