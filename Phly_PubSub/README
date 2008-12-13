@@ -1,0 +1,33 @@
+Phly_PubSub: Publish-Subscribe framework for PHP
+================================================
+
+Phly_PubSub is a simple, flexible Publish-Subscribe framework for PHP, 
+based on Dojo's dojo.publish/dojo.subscribe system.
+
+With Phly_PubSub, you may register any callback to listen on any topic, 
+as well as publish notifications to any topic from any location. As an 
+example:
+
+    // Create logger and subscribe to 'log' topic
+    $log = new Zend_Log(new Zend_Log_Writer_Stream('/tmp/app.log'));
+    Phly_PubSub::subscribe('log', $log, 'info');
+
+    // Within some application code:
+    Phly_PubSub::publish('log', 'Log message');
+
+Phly_PubSub can therefore be used: 
+
+* to ensure a separation of concerns
+* as a minimal Aspect-Oriented Programming (AOP) mechanism for PHP
+* to provide an opt-in subject/observer mechanism for your code without
+  requiring refactoring
+
+TODO/Further Questions
+======================
+* Exception handling. Should exceptions raised by subscribers prevent 
+  execution of other subscribers and/or the calling code?
+  * If not, how should errors be handled/aggregated/reported?
+* Should return values from subscribers be allowed? If so, how would they be
+  handled?
+  * Use case would be to allow early escape from a method based on the return
+    value of a subscriber
