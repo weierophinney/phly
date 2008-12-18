@@ -21,6 +21,7 @@ require_once dirname(__FILE__) . '/../TestHelper.php';
 
 require_once 'Phly/PubSubTest.php';
 require_once 'Phly/PubSub/HandleTest.php';
+require_once 'Phly/PubSub/ProviderTest.php';
 
 /**
  * @category   Phly
@@ -41,6 +42,7 @@ class Phly_AllTests
         $suite = new PHPUnit_Framework_TestSuite('Phly - All Tests');
 
         $suite->addTestSuite('Phly_PubSubTest');
+        $suite->addTestSuite('Phly_PubSub_ProviderTest');
         $suite->addTestSuite('Phly_PubSub_HandleTest');
 
         return $suite;
