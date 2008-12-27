@@ -492,6 +492,33 @@ class Phly_Couch
         return new Phly_Couch_Result($response);
     }
 
+    /**
+     * Retrieve a view
+     *
+     * @param  string $name
+     * @param  null|array $options 
+     * @return Phly_Couch_DocumentSet
+     * @throws Phly_Couch_Exception on failure or bad db
+     */
+    public function view($name, array $options = null)
+    {
+        $db = null;
+        if (is_array($options) && array_key_exists('db', $options)) {
+            $db = $options['db'];
+            unset($options['db']);
+        }
+        $db = $this->_verifyDb($db);
+
+        $response = $this->_prepareAndSend($db . '/_view/'.$name, 'GET', $options);
+        if (!$response->isSuccessful()) {
+            require_once 'Phly/Couch/Exception.php';
+            throw new Phly_Couch_Exception(sprintf('Failed querying database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
+        }
+
+        require_once 'Phly/Couch/DocumentSet.php';
+        return new Phly_Couch_DocumentSet($response->getBody());
+    }
+
     // Helper methods
 
     /**
