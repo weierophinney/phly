@@ -424,7 +424,7 @@ class Phly_Couch
             case 201:
             default:
                 require_once 'Phly/Couch/Result.php';
-                return new Phly_Couch_Result($response->getBody());
+                return new Phly_Couch_Result($response);
                 break;
         }
     }
@@ -506,7 +506,6 @@ class Phly_Couch
         $client = $this->getHttpClient();
         $uri    = 'http://' . $this->getHost() . ':' . $this->getPort() . '/' . $path;
 
-        $client->resetParameters();
         $client->setUri($uri);
         if (null !== $queryParams) {
             foreach ($queryParams as $key => $value) {
@@ -531,6 +530,7 @@ class Phly_Couch
         $client = $this->getHttpClient();
         $this->_prepareUri($path, $queryParams);
         $response = $client->request($method);
+        $client->resetParameters();
         return $response;
     }
 
