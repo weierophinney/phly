@@ -58,8 +58,7 @@ class Phly_PubSub_Provider
             $this->_topics[$topic] = array();
         }
         $handle = new Phly_PubSub_Handle($topic, $context, $handler);
-        if (in_array($handle, $this->_topics[$topic])) {
-            $index = array_search($handle, $this->_topics[$topic]);
+        if ($index = array_search($handle, $this->_topics[$topic])) {
             return $this->_topics[$topic][$index];
         }
         $this->_topics[$topic][] = $handle;
