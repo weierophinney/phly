@@ -18,9 +18,33 @@
 class Phly_PubSub
 {
     /**
-     * Subscribed topics and their handles
+     * @var Phly_PubSub_Provider
      */
-    protected static $_topics = array();
+    protected static $_instance;
+
+    /**
+     * Retrieve PubSub provider instance
+     * 
+     * @return Phly_PubSub_Provider
+     */
+    public static function getInstance()
+    {
+        if (null === self::$_instance) {
+            self::setInstance(new Phly_PubSub_Provider());
+        }
+        return self::$_instance;
+    }
+
+    /**
+     * Set PubSub provider instance
+     * 
+     * @param  Phly_PubSub_Provider $provider 
+     * @return void
+     */
+    public static function setInstance(Phly_PubSub_Provider $provider)
+    {
+        self::$_instance = $provider;
+    }
 
     /**
      * Publish to all handlers for a given topic
@@ -31,14 +55,8 @@ class Phly_PubSub
      */
     public static function publish($topic, $args = null)
     {
-        if (empty(self::$_topics[$topic])) {
-            return;
-        }
-        $args = func_get_args();
-        array_shift($args);
-        foreach (self::$_topics[$topic] as $handle) {
-            $handle->call($args);
-        }
+        $provider = self::getInstance();
+        return $provider->publish($topic, $args);
     }
 
     /**
@@ -51,16 +69,8 @@ class Phly_PubSub
      */
     public static function subscribe($topic, $context, $handler = null)
     {
-        if (empty(self::$_topics[$topic])) {
-            self::$_topics[$topic] = array();
-        }
-        $handle = new Phly_PubSub_Handle($topic, $context, $handler);
-        if (in_array($handle, self::$_topics[$topic])) {
-            $index = array_search($handle, self::$_topics[$topic]);
-            return self::$_topics[$topic][$index];
-        }
-        self::$_topics[$topic][] = $handle;
-        return $handle;
+        $provider = self::getInstance();
+        return $provider->subscribe($topic, $context, $handler);
     }
 
     /**
@@ -71,15 +81,8 @@ class Phly_PubSub
      */
     public static function unsubscribe(Phly_PubSub_Handle $handle)
     {
-        $topic = $handle->getTopic();
-        if (empty(self::$_topics[$topic])) {
-            return false;
-        }
-        if (false === ($index = array_search($handle, self::$_topics[$topic]))) {
-            return false;
-        }
-        unset(self::$_topics[$topic][$index]);
-        return true;
+        $provider = self::getInstance();
+        return $provider->unsubscribe($handle);
     }
 
     /**
@@ -89,7 +92,8 @@ class Phly_PubSub
      */
     public static function getTopics()
     {
-        return array_keys(self::$_topics);
+        $provider = self::getInstance();
+        return $provider->getTopics();
     }
 
     /**
@@ -100,10 +104,8 @@ class Phly_PubSub
      */
     public static function getSubscribedHandles($topic)
     {
-        if (empty(self::$_topics[$topic])) {
-            return array();
-        }
-        return self::$_topics[$topic];
+        $provider = self::getInstance();
+        return $provider->getSubscribedHandles($topic);
     }
 
     /**
@@ -114,8 +116,7 @@ class Phly_PubSub
      */
     public static function clearHandles($topic)
     {
-        if (!empty(self::$_topics[$topic])) {
-            unset(self::$_topics[$topic]);
-        }
+        $provider = self::getInstance();
+        return $provider->clearHandles($topic);
     }
 }
