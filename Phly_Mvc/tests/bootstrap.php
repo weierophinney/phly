@@ -2,6 +2,7 @@
 set_include_path(implode(PATH_SEPARATOR, array(
     realpath(dirname(__FILE__)),
     realpath(dirname(__FILE__) . '/../library'),
+    realpath(dirname(__FILE__) . '/../../Phly_PubSub/library'),
     '/home/matthew/git/zf-standard/incubator/library',
     '/home/matthew/git/zf-standard/trunk/library',
     '/usr/local/zend/share/pear',
