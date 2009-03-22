@@ -27,6 +27,17 @@ class Phly_Mvc_EventManagerTest extends PHPUnit_Framework_TestCase
         $this->assertContains('Phly_', $namespaces);
     }
 
+    public function testEnvironmentShouldBeNullByDefault()
+    {
+        $this->assertNull($this->eventManager->getEnvironment());
+    }
+
+    public function testPassingEnvironmentToConstructorShouldSetEnvironment()
+    {
+        $em = new Phly_Mvc_EventManager(array(), 'testing');
+        $this->assertEquals('testing', $em->getEnvironment());
+    }
+
     public function testOptionsArrayPassedToConstructorShouldRecordOptions()
     {
         $options = array('foo' => 'bar');
@@ -46,21 +57,35 @@ class Phly_Mvc_EventManagerTest extends PHPUnit_Framework_TestCase
 
     public function testIniZendConfigFilePathPassedToConstructorShouldRecordOptions()
     {
-        $this->markTestIncomplete();
+        $em = new Phly_Mvc_EventManager(dirname(__FILE__) . '/_files/config.ini', 'testing');
+        $test = $em->getOptions();
+        $this->assertEquals(array('foo' => 'bar'), $test);
     }
 
     public function testXmlZendConfigFilePathPassedToConstructorShouldRecordOptions()
     {
-        $this->markTestIncomplete();
+        $em = new Phly_Mvc_EventManager(dirname(__FILE__) . '/_files/config.xml', 'testing');
+        $test = $em->getOptions();
+        $this->assertEquals(array('foo' => 'bar'), $test);
     }
 
     public function testIncZendConfigFilePathPassedToConstructorShouldRecordOptions()
     {
-        $this->markTestIncomplete();
+        $em = new Phly_Mvc_EventManager(dirname(__FILE__) . '/_files/config.inc');
+        $test = $em->getOptions();
+        $this->assertEquals(array('foo' => 'bar'), $test);
     }
 
     public function testPhpZendConfigFilePathPassedToConstructorShouldRecordOptions()
     {
-        $this->markTestIncomplete();
+        $em = new Phly_Mvc_EventManager(dirname(__FILE__) . '/_files/config.php');
+        $test = $em->getOptions();
+        $this->assertEquals(array('foo' => 'bar'), $test);
+    }
+
+    public function testEventObjectLazyLoadsByDefault()
+    {
+        $event = $this->eventManager->getEvent();
+        $this->assertTrue($event instanceof Phly_Mvc_Event);
     }
 }

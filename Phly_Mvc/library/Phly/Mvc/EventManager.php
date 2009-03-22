@@ -12,6 +12,16 @@ class Phly_Mvc_EventManager
     protected $_classMethods;
 
     /**
+     * @var string application environment
+     */
+    protected $_environment;
+
+    /**
+     * @var Phly_Mvc_Event
+     */
+    protected $_event;
+
+    /**
      * @var array
      */
     protected $_options = array();
@@ -20,17 +30,23 @@ class Phly_Mvc_EventManager
      * Constructor
      * 
      * @param  null|string|array|Zend_Config $spec 
+     * @param  null|string $env Application environment
      * @return void
      * @throws Phly_Mvc_Exception for invalid parameters
      */
-    public function __construct($spec = null)
+    public function __construct($spec = null, $env = null)
     {
         require_once 'Zend/Loader/Autoloader.php';
         $this->_autoloader = Zend_Loader_Autoloader::getInstance();
         $this->_autoloader->registerNamespace('Phly_');
 
+        if (null !== $env) {
+            $this->setEnvironment($env);
+        }
+
         if (is_string($spec)) {
-            $this->_loadConfig($spec);
+            $config = $this->_loadConfig($spec);
+            $this->setOptions($config);
         } elseif (is_array($spec)) {
             $this->setOptions($spec);
         } elseif ($spec instanceof Zend_Config) {
@@ -48,6 +64,53 @@ class Phly_Mvc_EventManager
     public function getAutoloader()
     {
         return $this->_autoloader;
+    }
+
+    /**
+     * Set application environment
+     * 
+     * @param  string $env 
+     * @return Phly_Mvc_EventManager
+     */
+    public function setEnvironment($env)
+    {
+        $this->_environment = (string) $env;
+        return $this;
+    }
+
+    /**
+     * Retrieve environment
+     * 
+     * @return string
+     */
+    public function getEnvironment()
+    {
+        return $this->_environment;
+    }
+
+    /**
+     * Set event object
+     * 
+     * @param  Phly_Mvc_Event $event 
+     * @return Phly_Mvc_EventManager
+     */
+    public function setEvent(Phly_Mvc_Event $event)
+    {
+        $this->_event = $event;
+        return $this;
+    }
+
+    /**
+     * Retrieve event object
+     * 
+     * @return Phly_Mvc_Event
+     */
+    public function getEvent()
+    {
+        if (null === $this->_event) {
+            $this->_event = new Phly_Mvc_Event;
+        }
+        return $this->_event;
     }
 
     /**
