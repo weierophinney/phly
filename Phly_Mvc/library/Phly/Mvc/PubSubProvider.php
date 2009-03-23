@@ -23,7 +23,7 @@ class Phly_Mvc_PubSubProvider extends Phly_PubSub_Provider
         array_shift($args);
         foreach ($this->_topics[$topic] as $handle) {
             $handle->call($args);
-            if ('response' == $this->getLastTopic()) {
+            if ('mvc.response' == $this->getLastTopic()) {
                 return;
             }
         }

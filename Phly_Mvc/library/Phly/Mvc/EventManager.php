@@ -27,6 +27,11 @@ class Phly_Mvc_EventManager
     protected $_options = array();
 
     /**
+     * @var Phly_Mvc_PubSubProvider
+     */
+    protected $_pubSub;
+
+    /**
      * Constructor
      * 
      * @param  null|string|array|Zend_Config $spec 
@@ -114,6 +119,35 @@ class Phly_Mvc_EventManager
     }
 
     /**
+     * Retrieve registered events
+     * 
+     * @return array
+     */
+    public function getTopics()
+    {
+        return $this->getPubSubProvider()->getTopics();
+    }
+
+    public function setPubSubProvider(Phly_Mvc_PubSubProvider $pubsub)
+    {
+        $this->_pubSub = $pubsub;
+        return $this;
+    }
+
+    public function getPubSubProvider()
+    {
+        if (null === $this->_pubSub) {
+            $this->_pubSub = new Phly_Mvc_PubSubProvider();
+            $this->_pubSub->subscribe('mvc.request', $this, 'getRequest');
+            $this->_pubSub->subscribe('mvc.routing', $this, 'route');
+            $this->_pubSub->subscribe('mvc.action', $this, 'dispatch');
+            $this->_pubSub->subscribe('mvc.response', $this, 'getResponse');
+            $this->_pubSub->subscribe('mvc.error', $this, 'handleException');
+        }
+        return $this->_pubSub;
+    }
+
+    /**
      * Set options
      * 
      * @param  array $options 
@@ -144,6 +178,38 @@ class Phly_Mvc_EventManager
     public function getOptions()
     {
         return $this->_options;
+    }
+
+    public function handle()
+    {
+        $pubSub = $this->getPubSubProvider();
+        $event  = $this->getEvent();
+        foreach ($this->getTopics() as $topic) {
+            if ('mvc.error' == $topic) {
+                continue;
+            }
+            $pubSub->publish($topic, $event);
+        }
+    }
+
+    public function getRequest()
+    {
+    }
+
+    public function route()
+    {
+    }
+
+    public function dispatch()
+    {
+    }
+
+    public function getResponse()
+    {
+    }
+
+    public function handleException()
+    {
     }
 
     /**

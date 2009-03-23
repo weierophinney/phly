@@ -5,6 +5,59 @@ class Phly_Mvc_EventManagerTest extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->eventManager = new Phly_Mvc_EventManager();
+
+        $this->request  = false;
+        $this->routing  = false;
+        $this->action   = false;
+        $this->response = false;
+        $this->error    = false;
+        $this->order    = array();
+        $this->args     = array();
+    }
+
+    public function prepareProvider()
+    {
+        $pubSub = $this->eventManager->getPubSubProvider();
+        $pubSub->subscribe('mvc.request', $this, 'mvcRequest');
+        $pubSub->subscribe('mvc.routing', $this, 'mvcRouting');
+        $pubSub->subscribe('mvc.action', $this, 'mvcAction');
+        $pubSub->subscribe('mvc.response', $this, 'mvcResponse');
+        $pubSub->subscribe('mvc.error', $this, 'mvcError');
+    }
+
+    public function mvcRequest()
+    {
+        $this->request = true;
+        $this->order[] = 'mvc.request';
+        $this->args['mvc.request'] = func_get_args();
+    }
+
+    public function mvcRouting()
+    {
+        $this->routing = true;
+        $this->order[] = 'mvc.routing';
+        $this->args['mvc.routing'] = func_get_args();
+    }
+
+    public function mvcAction()
+    {
+        $this->action = true;
+        $this->order[] = 'mvc.action';
+        $this->args['mvc.action'] = func_get_args();
+    }
+
+    public function mvcResponse()
+    {
+        $this->response = true;
+        $this->order[] = 'mvc.response';
+        $this->args['mvc.response'] = func_get_args();
+    }
+
+    public function mvcError()
+    {
+        $this->error = true;
+        $this->order[] = 'mvc.error';
+        $this->args['mvc.error'] = func_get_args();
     }
 
     /**
@@ -87,5 +140,52 @@ class Phly_Mvc_EventManagerTest extends PHPUnit_Framework_TestCase
     {
         $event = $this->eventManager->getEvent();
         $this->assertTrue($event instanceof Phly_Mvc_Event);
+    }
+
+    public function testDefaultEventsAreRegistered()
+    {
+        $events = $this->eventManager->getTopics();
+        $this->assertEquals(array(
+            'mvc.request',
+            'mvc.routing',
+            'mvc.action',
+            'mvc.response',
+            'mvc.error',
+        ), $events);
+    }
+
+    public function testRegisteredEventsShouldMatchPubSubTopics()
+    {
+        $events = $this->eventManager->getTopics();
+        $topics = $this->eventManager->getPubSubProvider()->getTopics();
+        $this->assertSame($topics, $events);
+    }
+
+    public function testHandleShouldNotTriggerErrorEventInAbsenceOfException()
+    {
+        $this->prepareProvider();
+        $this->eventManager->handle();
+        $this->assertFalse($this->error);
+    }
+
+    public function testHandleShouldTriggerEventsInOrder()
+    {
+        $events = $this->eventManager->getTopics();
+        array_pop($events);
+        $this->prepareProvider();
+        $this->eventManager->handle();
+        $this->assertEquals($events, $this->order);
+    }
+
+    public function testHandleShouldPassEventWhenPublishing()
+    {
+        $events = $this->eventManager->getTopics();
+        $event  = $this->eventManager->getEvent();
+        array_pop($events);
+        $this->prepareProvider();
+        $this->eventManager->handle();
+        foreach ($events as $e) {
+            $this->assertContains($event, $this->args[$e]);
+        }
     }
 }

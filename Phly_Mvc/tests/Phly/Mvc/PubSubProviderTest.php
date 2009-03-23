@@ -16,7 +16,7 @@ class Phly_Mvc_PubSubProviderTest extends PHPUnit_Framework_TestCase
 
     public function callResponseSubscriber()
     {
-        $this->pubSub->publish('response');
+        $this->pubSub->publish('mvc.response');
     }
 
     public function responseSubscriber()
@@ -35,7 +35,7 @@ class Phly_Mvc_PubSubProviderTest extends PHPUnit_Framework_TestCase
     {
         $this->pubSub->subscribe('foo', $this, 'callResponseSubscriber');
         $this->pubSub->subscribe('foo', $this, 'subscriber');
-        $this->pubSub->subscribe('response', $this, 'responseSubscriber');
+        $this->pubSub->subscribe('mvc.response', $this, 'responseSubscriber');
         $this->pubSub->publish('foo');
         $this->assertTrue($this->response);
         $this->assertFalse($this->subscriber);
