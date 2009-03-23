@@ -136,6 +136,14 @@ class Phly_Mvc_EventManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(array('foo' => 'bar'), $test);
     }
 
+    /**
+     * @expectedException Phly_Mvc_Exception
+     */
+    public function testPassingInvalidConfigStringToConstructorShouldThrowException()
+    {
+        $em = new Phly_Mvc_EventManager(dirname(__FILE__) . '/_files/nonexistent.badSuffix');
+    }
+
     public function testEventObjectLazyLoadsByDefault()
     {
         $event = $this->eventManager->getEvent();

@@ -113,7 +113,7 @@ class Phly_Mvc_EventManager
     public function getEvent()
     {
         if (null === $this->_event) {
-            $this->_event = new Phly_Mvc_Event;
+            $this->setEvent(new Phly_Mvc_Event);
         }
         return $this->_event;
     }
@@ -137,12 +137,13 @@ class Phly_Mvc_EventManager
     public function getPubSubProvider()
     {
         if (null === $this->_pubSub) {
-            $this->_pubSub = new Phly_Mvc_PubSubProvider();
-            $this->_pubSub->subscribe('mvc.request', $this, 'getRequest');
-            $this->_pubSub->subscribe('mvc.routing', $this, 'route');
-            $this->_pubSub->subscribe('mvc.action', $this, 'dispatch');
-            $this->_pubSub->subscribe('mvc.response', $this, 'getResponse');
-            $this->_pubSub->subscribe('mvc.error', $this, 'handleException');
+            $pubSub = new Phly_Mvc_PubSubProvider();
+            $pubSub->subscribe('mvc.request', $this, 'getRequest');
+            $pubSub->subscribe('mvc.routing', $this, 'route');
+            $pubSub->subscribe('mvc.action', $this, 'dispatch');
+            $pubSub->subscribe('mvc.response', $this, 'getResponse');
+            $pubSub->subscribe('mvc.error', $this, 'handleException');
+            $this->setPubSubProvider($pubSub);
         }
         return $this->_pubSub;
     }
