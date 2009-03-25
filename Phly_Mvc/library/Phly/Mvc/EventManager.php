@@ -32,6 +32,11 @@ class Phly_Mvc_EventManager
     protected $_pubSub;
 
     /**
+     * @var Phly_Mvc_Router_IRouter
+     */
+    protected $_router;
+
+    /**
      * Constructor
      * 
      * @param  null|string|array|Zend_Config $spec 
@@ -139,7 +144,7 @@ class Phly_Mvc_EventManager
         if (null === $this->_pubSub) {
             $pubSub = new Phly_Mvc_PubSubProvider();
             $pubSub->subscribe('mvc.request', $this, 'getRequest');
-            $pubSub->subscribe('mvc.routing', $this, 'route');
+            $pubSub->subscribe('mvc.routing', $this->getRouter(), 'route');
             $pubSub->subscribe('mvc.action', $this, 'dispatch');
             $pubSub->subscribe('mvc.response', $this, 'getResponse');
             $pubSub->subscribe('mvc.error', $this, 'handleException');
@@ -197,8 +202,29 @@ class Phly_Mvc_EventManager
     {
     }
 
-    public function route()
+    /**
+     * Set router
+     * 
+     * @param  Phly_Mvc_Router_IRouter $router 
+     * @return Phly_Mvc_EventManager
+     */
+    public function setRouter(Phly_Mvc_Router_IRouter $router)
     {
+        $this->_router = $router;
+        return $this;
+    }
+
+    /**
+     * Retrieve router
+     * 
+     * @return Phly_Mvc_Router_IRouter
+     */
+    public function getRouter()
+    {
+        if (null === $this->_router) {
+            $this->setRouter(new Phly_Mvc_Subscriber_HordeRoutes());
+        }
+        return $this->_router;
     }
 
     public function dispatch()

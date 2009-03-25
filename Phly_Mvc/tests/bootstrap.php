@@ -13,4 +13,5 @@ spl_autoload_unregister(array($loader, 'autoload'));
 unset($loader);
 Zend_Loader_Autoloader::resetInstance();
 Zend_Loader_Autoloader::getInstance()->registerNamespace('PHPUnit_')
+                                     ->registerNamespace('Horde_')
                                      ->registerNamespace('Phly_');
