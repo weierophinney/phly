@@ -148,14 +148,59 @@ class Phly_Mvc_Request_HttpTest extends PHPUnit_Framework_TestCase
         $this->assertNull($this->request->getBaseUrl());
     }
 
-    public function testBaseUrlShouldBeSameAsScriptNameIfBasenamesMatch()
+    public function testBaseUrlShouldBeNullIfRequestUriIsEmpty()
     {
         $data = array(
-            'REQUEST_URI'     => '/foo/bar/index.php',
-            'SCRIPT_FILENAME' => '/tmp/public_html/foo/bar/index.php',
+            'SCRIPT_FILENAME' => 'index.php',
+            'SCRIPT_NAME'     => '/foo/bar/index.php',
+        );
+        $this->request->setServer($data);
+        $this->assertNull($this->request->getBaseUrl());
+    }
+
+    public function testBaseUrlShouldEqualScriptNameWhenScriptNameAndFileNameAreSameAndMatchStartOfRequestUri()
+    {
+        $data = array(
+            'REQUEST_URI'     => '/foo/bar/index.php/baz/bat',
+            'SCRIPT_FILENAME' => 'index.php',
             'SCRIPT_NAME'     => '/foo/bar/index.php',
         );
         $this->request->setServer($data);
         $this->assertEquals($data['SCRIPT_NAME'], $this->request->getBaseUrl());
+    }
+
+    public function testBaseUrlShouldEqualScriptNameDirWhenScriptNameAndFileNameAreSameAndMatchDirectoryAtStartOfRequestUri()
+    {
+        $data = array(
+            'REQUEST_URI'     => '/foo/bar/baz/bat',
+            'SCRIPT_FILENAME' => 'index.php',
+            'SCRIPT_NAME'     => '/foo/bar/index.php',
+        );
+        $this->request->setServer($data);
+        $this->assertEquals(dirname($data['SCRIPT_NAME']), $this->request->getBaseUrl());
+    }
+
+    public function testBaseUrlShouldBeEmptyWhenScriptNameAndFileNameAreSameAndDoNotMatchRequestUriAtAll()
+    {
+        $data = array(
+            'REQUEST_URI'     => '/baz/bat',
+            'SCRIPT_FILENAME' => 'index.php',
+            'SCRIPT_NAME'     => '/foo/bar/index.php',
+        );
+        $this->request->setServer($data);
+        $baseUrl = $this->request->getBaseUrl();
+        $this->assertTrue(empty($baseUrl));
+    }
+
+    public function testBaseUrlShouldNeverMatchAgainstQueryString()
+    {
+        $data = array(
+            'REQUEST_URI'     => '/baz/bat?rel=/foo/bar/index.php/baz',
+            'SCRIPT_FILENAME' => 'index.php',
+            'SCRIPT_NAME'     => '/foo/bar/index.php',
+        );
+        $this->request->setServer($data);
+        $baseUrl = $this->request->getBaseUrl();
+        $this->assertTrue(empty($baseUrl), $baseUrl);
     }
 }
