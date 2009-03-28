@@ -12,6 +12,11 @@ class Phly_Mvc_EventManager
     protected $_classMethods;
 
     /**
+     * @var Phly_Mvc_Dispatcher_IDispatcher
+     */
+    protected $_dispatcher;
+
+    /**
      * @var string application environment
      */
     protected $_environment;
@@ -30,6 +35,11 @@ class Phly_Mvc_EventManager
      * @var Phly_Mvc_PubSubProvider
      */
     protected $_pubSub;
+
+    /**
+     * @var Phly_Mvc_Subscriber_RequestEnv
+     */
+    protected $_requestSubscriber;
 
     /**
      * @var Phly_Mvc_Router_IRouter
@@ -143,9 +153,9 @@ class Phly_Mvc_EventManager
     {
         if (null === $this->_pubSub) {
             $pubSub = new Phly_Mvc_PubSubProvider();
-            $pubSub->subscribe('mvc.request', $this, 'getRequest');
+            $pubSub->subscribe('mvc.request', $this->getRequestSubscriber(), 'getRequest');
             $pubSub->subscribe('mvc.routing', $this->getRouter(), 'route');
-            $pubSub->subscribe('mvc.action', $this, 'dispatch');
+            $pubSub->subscribe('mvc.action', $this->getDispatcher(), 'dispatch');
             $pubSub->subscribe('mvc.response', $this, 'getResponse');
             $pubSub->subscribe('mvc.error', $this, 'handleException');
             $this->setPubSubProvider($pubSub);
@@ -198,8 +208,18 @@ class Phly_Mvc_EventManager
         }
     }
 
-    public function getRequest()
+    public function setRequestSubscriber($subscriber)
     {
+        $this->_requestSubscriber = $subscriber;
+        return $this;
+    }
+
+    public function getRequestSubscriber()
+    {
+        if (null === $this->_requestSubscriber) {
+            $this->setRequestSubscriber(new Phly_Mvc_Subscriber_RequestEnv());
+        }
+        return $this->_requestSubscriber;
     }
 
     /**
@@ -227,8 +247,24 @@ class Phly_Mvc_EventManager
         return $this->_router;
     }
 
-    public function dispatch()
+    /**
+     * Set dispatcher to use
+     * 
+     * @param  Phly_Mvc_Dispatcher_IDispatcher $dispatcher 
+     * @return Phly_Mvc_EventManager
+     */
+    public function setDispatcher(Phly_Mvc_Dispatcher_IDispatcher $dispatcher)
     {
+        $this->_dispatcher = $dispatcher;
+        return $this;
+    }
+
+    public function getDispatcher()
+    {
+        if (null === $this->_dispatcher) {
+            $this->setDispatcher(new Phly_Mvc_Dispatcher_IncludePath());
+        }
+        return $this->_dispatcher;
     }
 
     public function getResponse()

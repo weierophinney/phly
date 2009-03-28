@@ -14,7 +14,7 @@ class Phly_Mvc_Subscriber_HordeRoutes implements Phly_Mvc_Router_IRouter
      */
     public function route(Phly_Mvc_Event $e)
     {
-        $url = $e->requestEnv->getRequestUri();
+        $url = $e->requestEnv->getPathInfo();
         $map = $this->getRouter()->match($url);
 
         foreach ($map as $key => $value) {
