@@ -42,6 +42,11 @@ class Phly_Mvc_EventManager
     protected $_request;
 
     /**
+     * @var Phly_Mvc_Response_IResponse
+     */
+    protected $_response;
+
+    /**
      * @var Phly_Mvc_Router_IRouter
      */
     protected $_router;

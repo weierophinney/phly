@@ -38,4 +38,64 @@ class Phly_Mvc_EventTest extends PHPUnit_Framework_TestCase
         $event = new Phly_Mvc_Event(array('foo' => 'bar'));
         $this->assertEquals('bar', $event['foo']);
     }
+
+    public function testEventManagerIsUndefinedByDefault()
+    {
+        $this->assertNull($this->event->getEventManager());
+    }
+
+    public function testEventManagerIsMutable()
+    {
+        $em = new Phly_Mvc_EventManager();
+        $this->event->setEventManager($em);
+        $this->assertSame($em, $this->event->getEventManager());
+    }
+
+    /**
+     * @expectedException Phly_Mvc_Exception
+     */
+    public function testUsingPropertyOverloadingToSetEventManagerEnforcesType()
+    {
+        $this->event->eventManager = 'foo';
+    }
+
+    public function testRequestIsUndefinedByDefault()
+    {
+        $this->assertNull($this->event->getRequest());
+    }
+
+    public function testRequestIsMutable()
+    {
+        $em = new Phly_Mvc_Request_Request();
+        $this->event->setRequest($em);
+        $this->assertSame($em, $this->event->getRequest());
+    }
+
+    /**
+     * @expectedException Phly_Mvc_Exception
+     */
+    public function testUsingPropertyOverloadingToSetRequestEnforcesType()
+    {
+        $this->event->request = 'foo';
+    }
+
+    public function testResponseIsUndefinedByDefault()
+    {
+        $this->assertNull($this->event->getResponse());
+    }
+
+    public function testResponseIsMutable()
+    {
+        $em = new Phly_Mvc_Response_Response();
+        $this->event->setResponse($em);
+        $this->assertSame($em, $this->event->getResponse());
+    }
+
+    /**
+     * @expectedException Phly_Mvc_Exception
+     */
+    public function testUsingPropertyOverloadingToSetResponseEnforcesType()
+    {
+        $this->event->response = 'foo';
+    }
 }

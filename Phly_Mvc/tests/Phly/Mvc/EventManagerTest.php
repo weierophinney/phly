@@ -18,19 +18,11 @@ class Phly_Mvc_EventManagerTest extends PHPUnit_Framework_TestCase
     public function prepareProvider()
     {
         $pubSub = new Phly_Mvc_PubSubProvider();
-        $pubSub->subscribe('mvc.request', $this, 'mvcRequest');
         $pubSub->subscribe('mvc.routing', $this, 'mvcRouting');
         $pubSub->subscribe('mvc.action', $this, 'mvcAction');
         $pubSub->subscribe('mvc.response', $this, 'mvcResponse');
         $pubSub->subscribe('mvc.error', $this, 'mvcError');
         $this->eventManager->setPubSubProvider($pubSub);
-    }
-
-    public function mvcRequest()
-    {
-        $this->request = true;
-        $this->order[] = 'mvc.request';
-        $this->args['mvc.request'] = func_get_args();
     }
 
     public function mvcRouting()
@@ -155,7 +147,6 @@ class Phly_Mvc_EventManagerTest extends PHPUnit_Framework_TestCase
     {
         $events = $this->eventManager->getTopics();
         $this->assertEquals(array(
-            'mvc.request',
             'mvc.routing',
             'mvc.action',
             'mvc.response',
