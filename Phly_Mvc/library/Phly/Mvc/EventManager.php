@@ -37,9 +37,9 @@ class Phly_Mvc_EventManager
     protected $_pubSub;
 
     /**
-     * @var Phly_Mvc_Subscriber_RequestEnv
+     * @var Phly_Mvc_Request_Request
      */
-    protected $_requestSubscriber;
+    protected $_request;
 
     /**
      * @var Phly_Mvc_Router_IRouter
@@ -143,20 +143,30 @@ class Phly_Mvc_EventManager
         return $this->getPubSubProvider()->getTopics();
     }
 
+    /**
+     * Set the pub-sub provider that contains all events and callbacks
+     * 
+     * @param  Phly_Mvc_PubSubProvider $pubsub 
+     * @return Phly_Mvc_EventManager
+     */
     public function setPubSubProvider(Phly_Mvc_PubSubProvider $pubsub)
     {
         $this->_pubSub = $pubsub;
         return $this;
     }
 
+    /**
+     * Retrieve the pub-sub provider (which contains all events and callbacks)
+     * 
+     * @return Phly_Mvc_PubSubProvider
+     */
     public function getPubSubProvider()
     {
         if (null === $this->_pubSub) {
             $pubSub = new Phly_Mvc_PubSubProvider();
-            $pubSub->subscribe('mvc.request', $this->getRequestSubscriber(), 'getRequest');
             $pubSub->subscribe('mvc.routing', $this->getRouter(), 'route');
             $pubSub->subscribe('mvc.action', $this->getDispatcher(), 'dispatch');
-            $pubSub->subscribe('mvc.response', $this, 'getResponse');
+            $pubSub->subscribe('mvc.response', $this->getResponse(), 'send');
             $pubSub->subscribe('mvc.error', $this, 'handleException');
             $this->setPubSubProvider($pubSub);
         }
@@ -196,10 +206,21 @@ class Phly_Mvc_EventManager
         return $this->_options;
     }
 
-    public function handle()
+    /**
+     * Handle events 
+     * 
+     * @return void
+     */
+    public function handle(Phly_Mvc_Event $event = null)
     {
+        if (null === $event) {
+            $event  = $this->getEvent();
+        }
+        $event->setEventManager($this)
+              ->setRequest($this->getRequest())
+              ->setResponse($this->getResponse());
+
         $pubSub = $this->getPubSubProvider();
-        $event  = $this->getEvent();
         foreach ($this->getTopics() as $topic) {
             if ('mvc.error' == $topic) {
                 continue;
@@ -208,18 +229,60 @@ class Phly_Mvc_EventManager
         }
     }
 
-    public function setRequestSubscriber($subscriber)
+    /**
+     * Set the request object
+     * 
+     * @param  Phly_Mvc_Request_Request $request 
+     * @return Phly_Mvc_EventManager
+     */
+    public function setRequest(Phly_Mvc_Request_Request $request)
     {
-        $this->_requestSubscriber = $subscriber;
+        $this->_request = $request;
         return $this;
     }
 
-    public function getRequestSubscriber()
+    /**
+     * Retrieve the request object
+     *
+     * Lazy loads Phly_Mvc_Request_Http by default if no request object 
+     * currently registered.
+     * 
+     * @return Phly_Mvc_Request_Request
+     */
+    public function getRequest()
     {
-        if (null === $this->_requestSubscriber) {
-            $this->setRequestSubscriber(new Phly_Mvc_Subscriber_RequestEnv());
+        if (null === $this->_request) {
+            $this->setRequest(new Phly_Mvc_Request_Http());
         }
-        return $this->_requestSubscriber;
+        return $this->_request;
+    }
+
+    /**
+     * Set the response object
+     * 
+     * @param  Phly_Mvc_Response_Response $response 
+     * @return Phly_Mvc_EventManager
+     */
+    public function setResponse(Phly_Mvc_Response_IResponse $response)
+    {
+        $this->_response = $response;
+        return $this;
+    }
+
+    /**
+     * Retrieve the response object
+     *
+     * Lazy loads Phly_Mvc_Response_Http by default if no response object 
+     * currently registered.
+     * 
+     * @return Phly_Mvc_Response_IResponse
+     */
+    public function getResponse()
+    {
+        if (null === $this->_response) {
+            $this->setResponse(new Phly_Mvc_Response_Http());
+        }
+        return $this->_response;
     }
 
     /**
@@ -259,16 +322,17 @@ class Phly_Mvc_EventManager
         return $this;
     }
 
+    /**
+     * Retrieve dispatcher to use with action event
+     * 
+     * @return Phly_Mvc_Dispatcher_IDispatcher
+     */
     public function getDispatcher()
     {
         if (null === $this->_dispatcher) {
             $this->setDispatcher(new Phly_Mvc_Dispatcher_IncludePath());
         }
         return $this->_dispatcher;
-    }
-
-    public function getResponse()
-    {
     }
 
     public function handleException()
