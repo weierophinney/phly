@@ -56,23 +56,13 @@ class Phly_Mvc_Event extends ArrayObject
      */
     public function offsetGet($name)
     {
-        $normalized = strtolower($name);
-        switch ($normalized) {
+        switch (strtolower($name)) {
             case 'eventmanager':
-                if (isset($this->_eventManager)) {
-                    return $this->_eventManager;
-                }
-                return null;
+                return $this->getEventManager();
             case 'request':
-                if (isset($this->_request)) {
-                    return $this->_request;
-                }
-                return null;
+                return $this->getRequest();
             case 'response':
-                if (isset($this->_response)) {
-                    return $this->_response;
-                }
-                return null;
+                return $this->getResponse();
             default:
                 return parent::offsetGet($name);
         }

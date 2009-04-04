@@ -98,4 +98,25 @@ class Phly_Mvc_EventTest extends PHPUnit_Framework_TestCase
     {
         $this->event->response = 'foo';
     }
+
+    public function testFetchingEventManagerByArrayAccessProxiesToInternalAccessor()
+    {
+        $em = new Phly_Mvc_EventManager();
+        $this->event->setEventManager($em);
+        $this->assertSame($em, $this->event['eventManager']);
+    }
+
+    public function testFetchingRequestByArrayAccessProxiesToInternalAccessor()
+    {
+        $r = new Phly_Mvc_Request_Http();
+        $this->event->setRequest($r);
+        $this->assertSame($r, $this->event['request']);
+    }
+
+    public function testFetchingResponseByArrayAccessProxiesToInternalAccessor()
+    {
+        $r = new Phly_Mvc_Response_Http();
+        $this->event->setResponse($r);
+        $this->assertSame($r, $this->event['response']);
+    }
 }
