@@ -1,5 +1,19 @@
 <?php
 
+/**
+ * HTTP request environment
+ *
+ * Portions verbatim or based on Zend_Controller_Request_Http, 
+ * copyright (c) 2005-2008  Zend Technologies USA Inc. (http://www.zend.com).
+ * 
+ * @uses       Phly_Mvc_Request_Request
+ * @package    Phly_Mvc
+ * @subpackage Request
+ * @copyright  Matthew Weier O'Phinney <mweierophinney@gmail.com> 
+ * @author     Matthew Weier O'Phinney <mweierophinney@gmail.com> 
+ * @license    New BSD {@link http://framework.zend.com/license/new-bsd}
+ * @version    $Id: $
+ */
 class Phly_Mvc_Request_Http extends Phly_Mvc_Request_Request
 {
     /**

@@ -41,9 +41,22 @@ class Phly_Mvc_Response_Response implements Phly_Mvc_Response_IResponse
         return $this->_views;
     }
 
+    public function hasView($name)
+    {
+        return array_key_exists($name, $this->_views);
+    }
+
+    public function getViewVars($name)
+    {
+        if ($this->hasView($name)) {
+            return $this->_views[$name];
+        }
+        return array();
+    }
+
     public function removeView($name)
     {
-        if (isset($this->_views[$name])) {
+        if ($this->hasView($name)) {
             unset($this->_views[$name]);
         }
         return $this;
@@ -55,13 +68,27 @@ class Phly_Mvc_Response_Response implements Phly_Mvc_Response_IResponse
         return $this;
     }
 
+    public function setMetadata($name, $value)
+    {
+        if ($this->hasMetadata($name)) {
+            $this->removeMetadata($name);
+        }
+        $this->addMetadata($name, $value);
+        return $this;
+    }
+
     public function addMetadata($name, $value)
     {
-        if (!empty($this->_metadata[$name])) {
+        if (!array_key_exists($name, $this->_metadata)) {
             $this->_metadata[$name] = array();
         }
         $this->_metadata[$name][] = (string) $value;
         return $this;
+    }
+
+    public function hasMetadata($name)
+    {
+        return array_key_exists($name, $this->_metadata);
     }
 
     public function getMetadata($name = null)
@@ -84,7 +111,7 @@ class Phly_Mvc_Response_Response implements Phly_Mvc_Response_IResponse
         return $this;
     }
 
-    public function clearMetadata($name)
+    public function clearMetadata()
     {
         $this->_metadata = array();
     }
@@ -103,10 +130,10 @@ class Phly_Mvc_Response_Response implements Phly_Mvc_Response_IResponse
     public function setRenderer($rendererOrClass)
     {
         if (is_string($rendererOrClass)) {
-            $rendererOrClass = new $rendererOrClass($this);
+            $rendererOrClass = new $rendererOrClass();
         } 
         
-        if (!$rendererOrClass instanceof Phly_Mvc_Response_Renderer_IRendererer) {
+        if (!$rendererOrClass instanceof Phly_Mvc_Response_Renderer_IRenderer) {
             throw new Phly_Mvc_Exception('Invalid renderer provided to response');
         }
 
