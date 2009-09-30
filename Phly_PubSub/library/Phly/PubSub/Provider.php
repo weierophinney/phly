@@ -29,19 +29,81 @@ class Phly_PubSub_Provider
      * Publish to all handlers for a given topic
      * 
      * @param  string $topic 
-     * @param  mixed $args All arguments besides the topic are passed as arguments to the handler
+     * @param  mixed $argv All arguments besides the topic are passed as arguments to the handler
      * @return void
      */
-    public function publish($topic, $args = null)
+    public function publish($topic, $argv = null)
     {
         if (empty($this->_topics[$topic])) {
             return;
         }
-        $args = func_get_args();
-        array_shift($args);
+
+        $return = null;
+        $argv   = func_get_args();
+        array_shift($argv);
         foreach ($this->_topics[$topic] as $handle) {
-            $handle->call($args);
+            $return = $handle->call($argv);
         }
+        return $return;
+    }
+
+    /**
+     * Notify subscribers until return value of one causes a callback to 
+     * evaluate to true
+     *
+     * Publishes subscribers until the provided callback evaluates the return 
+     * value of one as true, or until all subscribers have been executed.
+     * 
+     * @param  Callable $callback 
+     * @param  string $topic 
+     * @param  mixed $argv All arguments besides the topic are passed as arguments to the handler
+     * @return mixed
+     * @throws Phly_PubSub_InvalidCallbackException if invalid callback provided
+     */
+    public function publishUntil($callback, $topic, $argv = null)
+    {
+        if (!is_callable($callback)) {
+            throw new Phly_PubSub_InvalidCallbackException('Invalid filter callback provided');
+        }
+
+        if (empty($this->_topics[$topic])) {
+            return;
+        }
+
+        $return = null;
+        $argv   = func_get_args();
+        $argv   = array_slice($argv, 2);
+        foreach ($this->_topics[$topic] as $handle) {
+            $return = $handle->call($argv);
+            if (call_user_func($callback, $return)) {
+                break;
+            }
+        }
+        return $return;
+    }
+
+    /**
+     * Filter a value
+     *
+     * Notifies subscribers to the topic and passes the single value provided
+     * as an argument. Each subsequent subscriber is passed the return value
+     * of the previous subscriber, and the value of the last subscriber is 
+     * returned.
+     * 
+     * @param  string $topic 
+     * @param  mixed $value 
+     * @return mixed
+     */
+    public function filter($topic, $value)
+    {
+        if (empty($this->_topics[$topic])) {
+            return;
+        }
+
+        foreach ($this->_topics[$topic] as $handle) {
+            $value = $handle->call(array($value));
+        }
+        return $value;
     }
 
     /**

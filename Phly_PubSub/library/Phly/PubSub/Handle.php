@@ -44,6 +44,9 @@ class Phly_PubSub_Handle
         } else {
             $this->_callback = array($context, $handler);
         }
+        if (!is_callable($this->_callback)) {
+            throw new Phly_PubSub_InvalidCallbackException();
+        }
     }
 
     /**
@@ -70,10 +73,10 @@ class Phly_PubSub_Handle
      * Invoke handler
      * 
      * @param  array $args Arguments to pass to callback
-     * @return void
+     * @return mixed
      */
     public function call(array $args)
     {
-        call_user_func_array($this->getCallback(), $args);
+        return call_user_func_array($this->getCallback(), $args);
     }
 }

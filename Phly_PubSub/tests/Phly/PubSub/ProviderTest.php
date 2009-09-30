@@ -114,9 +114,42 @@ class Phly_PubSub_ProviderTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('test message', $this->message);
     }
 
+    public function testPublishShouldReturnTheReturnValueOfTheLastInvokedSubscriber()
+    {
+        $this->provider->subscribe('string.transform', 'trim');
+        $this->provider->subscribe('string.transform', 'str_rot13');
+        $value = $this->provider->publish('string.transform', ' foo ');
+        $this->assertEquals(str_rot13(' foo '), $value);
+    }
+
+    public function testPublishUntilShouldReturnAsSoonAsCallbackReturnsTrue()
+    {
+        $this->provider->subscribe('foo.bar', 'strpos');
+        $this->provider->subscribe('foo.bar', 'strstr');
+        $value = $this->provider->publishUntil(
+            array($this, 'evaluateStringCallback'), 
+            'foo.bar',
+            'foo', 'f'
+        );
+        $this->assertSame(0, $value);
+    }
+
+    public function testFilterShouldPassReturnValueOfEachSubscriberToNextSubscriber()
+    {
+        $this->provider->subscribe('string.transform', 'trim');
+        $this->provider->subscribe('string.transform', 'str_rot13');
+        $value = $this->provider->filter('string.transform', ' foo ');
+        $this->assertEquals(str_rot13('foo'), $value);
+    }
+
     public function handleTestTopic($message)
     {
         $this->message = $message;
+    }
+
+    public function evaluateStringCallback($value)
+    {
+        return (!$value);
     }
 }
 

@@ -49,20 +49,20 @@ class Phly_PubSub_HandleTest extends PHPUnit_Framework_TestCase
 
     public function testGetTopicShouldReturnTopic()
     {
-        $handle = new Phly_PubSub_Handle('foo', 'bar');
+        $handle = new Phly_PubSub_Handle('foo', 'rand');
         $this->assertEquals('foo', $handle->getTopic());
     }
 
     public function testCallbackShouldBeStringIfNoHandlerPassedToConstructor()
     {
-        $handle = new Phly_PubSub_Handle('foo', 'bar');
-        $this->assertSame('bar', $handle->getCallback());
+        $handle = new Phly_PubSub_Handle('foo', 'rand');
+        $this->assertSame('rand', $handle->getCallback());
     }
 
     public function testCallbackShouldBeArrayIfHandlerPassedToConstructor()
     {
-        $handle = new Phly_PubSub_Handle('foo', 'bar', 'baz');
-        $this->assertSame(array('bar', 'baz'), $handle->getCallback());
+        $handle = new Phly_PubSub_Handle('foo', 'Phly_PubSub_HandleTest_ObjectCallback', 'test');
+        $this->assertSame(array('Phly_PubSub_HandleTest_ObjectCallback', 'test'), $handle->getCallback());
     }
 
     public function testCallShouldInvokeCallbackWithSuppliedArguments()
@@ -73,9 +73,31 @@ class Phly_PubSub_HandleTest extends PHPUnit_Framework_TestCase
         $this->assertSame($args, $this->args);
     }
 
+    /**
+     * @expectedException Phly_PubSub_InvalidCallbackException
+     */
+    public function testPassingInvalidCallbackShouldRaiseInvalidCallbackException()
+    {
+        $handle = new Phly_PubSub_Handle('foo', 'boguscallback');
+    }
+
+    public function testCallShouldReturnTheReturnValueOfTheCallback()
+    {
+        $handle = new Phly_PubSub_Handle('foo', 'Phly_PubSub_HandleTest_ObjectCallback', 'test');
+        $this->assertEquals('bar', $handle->call(array()));
+    }
+
     public function handleCall()
     {
         $this->args = func_get_args();
+    }
+}
+
+class Phly_PubSub_HandleTest_ObjectCallback
+{
+    public static function test()
+    {
+        return 'bar';
     }
 }
 
