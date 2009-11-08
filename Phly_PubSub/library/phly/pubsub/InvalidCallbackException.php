@@ -9,12 +9,16 @@
  * @license   New BSD {@link http://www.opensource.org/licenses/bsd-license.php}
  */
 
+namespace phly\pubsub;
+
 /**
- * Marker interface for exceptions
+ * Invalid callback exception
  * 
  * @package Phly_PubSub
  * @version $Id: $
  */
-interface Phly_PubSub_Exception 
+class InvalidCallbackException
+    extends \Exception
+    implements Exception
 {
 }

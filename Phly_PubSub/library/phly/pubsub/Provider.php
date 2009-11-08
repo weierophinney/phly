@@ -9,16 +9,18 @@
  * @license   New BSD {@link http://www.opensource.org/licenses/bsd-license.php}
  */
 
+namespace phly\pubsub;
+
 /**
- * Phly_PubSub_Provider: per-instance Publish-Subscribe system
+ * Provider: per-instance Publish-Subscribe system
  *
- * Use Phly_PubSub_Provider when you want to create a per-instance plugin 
+ * Use Provider when you want to create a per-instance plugin 
  * system for your objects.
  * 
  * @package Phly_PubSub
  * @version $Id: $
  */
-class Phly_PubSub_Provider
+class Provider
 {
     /**
      * Subscribed topics and their handles
@@ -58,12 +60,12 @@ class Phly_PubSub_Provider
      * @param  string $topic 
      * @param  mixed $argv All arguments besides the topic are passed as arguments to the handler
      * @return mixed
-     * @throws Phly_PubSub_InvalidCallbackException if invalid callback provided
+     * @throws InvalidCallbackException if invalid callback provided
      */
     public function publishUntil($callback, $topic, $argv = null)
     {
         if (!is_callable($callback)) {
-            throw new Phly_PubSub_InvalidCallbackException('Invalid filter callback provided');
+            throw new InvalidCallbackException('Invalid filter callback provided');
         }
 
         if (empty($this->_topics[$topic])) {
@@ -112,14 +114,14 @@ class Phly_PubSub_Provider
      * @param  string $topic 
      * @param  string|object $context Function name, class name, or object instance
      * @param  null|string $handler If $context is a class or object, the name of the method to call
-     * @return Phly_PubSub_Handle Pub-Sub handle (to allow later unsubscribe)
+     * @return Handle Pub-Sub handle (to allow later unsubscribe)
      */
     public function subscribe($topic, $context, $handler = null)
     {
         if (empty($this->_topics[$topic])) {
             $this->_topics[$topic] = array();
         }
-        $handle = new Phly_PubSub_Handle($topic, $context, $handler);
+        $handle = new Handle($topic, $context, $handler);
         if ($index = array_search($handle, $this->_topics[$topic])) {
             return $this->_topics[$topic][$index];
         }
@@ -130,10 +132,10 @@ class Phly_PubSub_Provider
     /**
      * Unsubscribe a handler from a topic 
      * 
-     * @param  Phly_PubSub_Handle $handle 
+     * @param  Handle $handle 
      * @return bool Returns true if topic and handle found, and unsubscribed; returns false if either topic or handle not found
      */
-    public function unsubscribe(Phly_PubSub_Handle $handle)
+    public function unsubscribe(Handle $handle)
     {
         $topic = $handle->getTopic();
         if (empty($this->_topics[$topic])) {
@@ -160,7 +162,7 @@ class Phly_PubSub_Provider
      * Retrieve all handlers for a given topic
      * 
      * @param  string $topic 
-     * @return array Array of Phly_PubSub_Handle objects
+     * @return array Array of Handle objects
      */
     public function getSubscribedHandles($topic)
     {

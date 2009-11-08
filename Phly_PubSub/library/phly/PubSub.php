@@ -3,34 +3,38 @@
  * Phly - PHp LibrarY
  * 
  * @category  Phly
- * @package   Phly_PubSub
+ * @package   \phly\PubSub
  * @copyright Copyright (C) 2008 - Present, Matthew Weier O'Phinney
  * @author    Matthew Weier O'Phinney <mweierophinney@gmail.com> 
  * @license   New BSD {@link http://www.opensource.org/licenses/bsd-license.php}
  */
 
+namespace phly;
+use \phly\pubsub\Provider as Provider;
+use \phly\pubsub\Handle as Handle;
+
 /**
- * Phly_PubSub: Publish-Subscribe system for PHP
+ * \phly\PubSub: Publish-Subscribe system for PHP
  * 
- * @package Phly_PubSub
+ * @package \phly\PubSub
  * @version $Id: $
  */
-class Phly_PubSub
+class PubSub
 {
     /**
-     * @var Phly_PubSub_Provider
+     * @var Provider
      */
     protected static $_instance;
 
     /**
      * Retrieve PubSub provider instance
      * 
-     * @return Phly_PubSub_Provider
+     * @return Provider
      */
     public static function getInstance()
     {
         if (null === self::$_instance) {
-            self::setInstance(new Phly_PubSub_Provider());
+            self::setInstance(new Provider());
         }
         return self::$_instance;
     }
@@ -38,10 +42,10 @@ class Phly_PubSub
     /**
      * Set PubSub provider instance
      * 
-     * @param  Phly_PubSub_Provider $provider 
+     * @param  Provider $provider 
      * @return void
      */
-    public static function setInstance(Phly_PubSub_Provider $provider)
+    public static function setInstance(Provider $provider)
     {
         self::$_instance = $provider;
     }
@@ -79,7 +83,7 @@ class Phly_PubSub
      * @param  Phly_PubSub_Handle $handle 
      * @return bool Returns true if topic and handle found, and unsubscribed; returns false if either topic or handle not found
      */
-    public static function unsubscribe(Phly_PubSub_Handle $handle)
+    public static function unsubscribe(Handle $handle)
     {
         $provider = self::getInstance();
         return $provider->unsubscribe($handle);
@@ -100,7 +104,7 @@ class Phly_PubSub
      * Retrieve all handlers for a given topic
      * 
      * @param  string $topic 
-     * @return array Array of Phly_PubSub_Handle objects
+     * @return array Array of Handle objects
      */
     public static function getSubscribedHandles($topic)
     {

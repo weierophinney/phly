@@ -9,13 +9,15 @@
  * @license   New BSD {@link http://www.opensource.org/licenses/bsd-license.php}
  */
 
+namespace phly\pubsub;
+
 /**
- * Phly_PubSub_Handle: unique handle subscribed to a given topic
+ * Handle: unique handle subscribed to a given topic
  * 
  * @package Phly_PubSub
  * @version $Id: $
  */
-class Phly_PubSub_Handle
+class Handle
 {
     /**
      * @var string|array PHP callback to invoke
@@ -45,7 +47,7 @@ class Phly_PubSub_Handle
             $this->_callback = array($context, $handler);
         }
         if (!is_callable($this->_callback)) {
-            throw new Phly_PubSub_InvalidCallbackException();
+            throw new InvalidCallbackException();
         }
     }
 
@@ -62,7 +64,7 @@ class Phly_PubSub_Handle
     /**
      * Retrieve registered callback
      * 
-     * @return string|array
+     * @return Callback
      */
     public function getCallback()
     {

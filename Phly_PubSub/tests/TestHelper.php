@@ -1,8 +1,8 @@
 <?php
 function testAutoloader($class)
 {
-    $file = str_replace('_', '/', $class) . '.php';
-    return include $file;
+    $file = str_replace(array('\\', '_'), '/', $class) . '.php';
+    return include_once $file;
 }
 
 $libDir = dirname(__FILE__) . '/../library';
