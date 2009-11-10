@@ -1,0 +1,5 @@
+<?php 
+$container = \Zend_View_Helper_Placeholder_Registry::getRegistry()->getContainer('Zend_Layout');
+foreach ($container as $key => $value) {
+    echo "$key: $value\n\n";
+}
