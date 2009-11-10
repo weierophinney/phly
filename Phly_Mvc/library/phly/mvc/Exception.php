@@ -1,5 +1,5 @@
 <?php
-namespace \phly\mvc;
+namespace phly\mvc;
 
 interface Exception
 {

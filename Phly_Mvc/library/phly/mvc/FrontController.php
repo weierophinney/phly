@@ -1,6 +1,6 @@
 <?php
 namespace phly\mvc;
-use \phly\pubsub\Provider as Provider;
+use phly\pubsub\Provider as Provider;
 
 /**
  * FrontController
@@ -44,6 +44,7 @@ class FrontController implements FrontControllerInterface
         'routing',
         'dispatching',
         'response',
+        'error',
     );
 
     /**
@@ -79,14 +80,17 @@ class FrontController implements FrontControllerInterface
      * @param  Event $e 
      * @return void
      */
-    public function handle(Event $e = null)
+    public function handle(EventInterface $e = null)
     {
         if (null === $e) {
             $e = new Event();
         }
         $pubsub = $this->getPubSub();
-        $e->setPubSub($pubsub)
-          ->setStates($this->_states);
+        $e->setPubSub($pubsub);
+        $e->setStates($this->_states);
+
+        // Figure this part out...
+        $e->setResponse($pubsub->getResponse());
 
         // Closure to determine if state has changed
         $stateChanged = function () use ($e) {
@@ -149,6 +153,14 @@ class FrontController implements FrontControllerInterface
             }
             return;
 
+        error:
+            $e->markState();
+            $pubsub->publishUntil($stateChanged, 'mvc.error', $e);
+            if ($e->isStateChanged()) {
+                goto switchState;
+            }
+            goto response;
+
         switchState:
             switch ($e->getState()) {
                 case 'routing':
@@ -157,6 +169,8 @@ class FrontController implements FrontControllerInterface
                     goto dispatching;
                 case 'response':
                     goto response;
+                case 'error':
+                    goto error;
                 default:
                     throw new StateException();
             }

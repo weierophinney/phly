@@ -12,6 +12,7 @@ abstract class EventAbstract
     protected $_state = 'init';
     protected $_stateChanged = false;
     protected $_states = array();
+    protected $_exceptions = array();
 
     public function __construct(
         array $array = array(), 
@@ -43,7 +44,7 @@ abstract class EventAbstract
     }
 
     /**
-     * @param \Zend_Controller_Response_Abstract
+     * @param Response
      * @return EventInterface
      */
     public function setResponse($response)
@@ -53,12 +54,12 @@ abstract class EventAbstract
     }
 
     /**
-     * @return \Zend_Controller_Response_Abstract
+     * @return Response
      */
     public function getResponse()
     {
         if (null === $this->_response) {
-            $this->setResponse(new \Zend_Controller_Response_Http());
+            $this->setResponse(new Response());
         }
         return $this->_response;
     }
@@ -131,7 +132,7 @@ abstract class EventAbstract
      */
     public function isStateChanged()
     {
-        return $this->_stateChanged();
+        return $this->_stateChanged;
     }
 
     /**
@@ -152,5 +153,16 @@ abstract class EventAbstract
     public function getStates()
     {
         return $this->_states;
+    }
+
+    public function addException(\Exception $e)
+    {
+        $this->_exceptions[] = $e;
+        return $this;
+    }
+
+    public function getExceptions()
+    {
+        return $this->_exceptions;
     }
 }

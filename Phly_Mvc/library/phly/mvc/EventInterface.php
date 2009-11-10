@@ -73,4 +73,7 @@ interface EventInterface
      * @return array
      */
     public function getStates();
+
+    public function addException(\Exception $e);
+    public function getExceptions();
 }
