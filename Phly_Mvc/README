@@ -1,0 +1,131 @@
+Phly_Mvc: a proposed MVC architecture
+-------------------------------------
+Phly_Mvc is primarily a playground for working on a new MVC architecture for
+Zend Framework. The goals are:
+
+ * Lightweight
+ * Flexible
+ * Easy to extend
+ * Easy to create and use custom implementations
+
+In evaluating architectures, two principal ideas rose as potential solutions:
+
+ * Finite State Machine (FSM)
+ * Event-driven model
+
+The reasons an FSM were considered were several. First, the front controller
+defines several distinct states already: routing, dispatching, and emitting the
+response; errors are also a distinct state, though currently muddled into the
+rest of the architecture. (You could potentially add "bootstrapping" to that
+list.) However, in current ZF iterations, there's no easy way to transition
+between or skip states; e.g., if an exception is detected, an entire iteration
+of the dispatch loop is executed; if a redirect is made, you have to either
+complete the remainder of the dispatch loop or call "exit" (a horrible hack).
+
+A Finite State Machine largely solves these problems. If you need to go to
+another state, you simply goto it. That said, there are some limitations to
+goto: it only works with labels defined in the current scope; you cannot call
+goto from an invoked method, for instance. One way to mitigate this is to keep
+track of state in an object.
+
+At this point, an event driven model makes sense. In this case, a token, the
+event, is passed to all invoked methods. This allows those methods to alter the
+event state such that when the process returns to the invoking method, the state
+may be checked and control dispatched to the appropriate state accordingly.
+
+To make the concept more powerful, if each state allows for one or more topics
+to which listeners may subscribe, complex chains of actions may be created
+easily. Using Phly_PubSub, this also allows us to check the event state after
+each subscriber completes to determine if we need to transition to a new state
+-- allowing the subscribers to help determine execution flow.
+
+Each subscriber is passed one argument and one argument only: the Event. As
+such, the event now becomes a repository/service locator. In Phly_Mvc, it holds
+the request and response objects, the pubsub provider (so additional subscribers
+may be registered at any time), and the state; it can potentially hold anything,
+however, as it extends ArrayObject.
+
+Basic operation is something like this:
+
+    // where $stateChanged is a closure checking the state of the Event
+    routing:
+        $pubsub->publishUntil($stateChanged, 'mvc.routing.pre', $e);
+        $pubsub->publishUntil($stateChanged, 'mvc.routing', $e);
+        $pubsub->publishUntil($stateChanged, 'mvc.routing.post', $e);
+        $e->setState('dispatching');
+
+    dispatching:
+        $pubsub->publishUntil($stateChanged, 'mvc.dispatching.pre', $e);
+        $pubsub->publishUntil($stateChanged, 'mvc.dispatching', $e);
+        $pubsub->publishUntil($stateChanged, 'mvc.dispatching.post', $e);
+        $e->setState('response');
+
+    response:
+        $pubsub->publishUntil($stateChanged, 'mvc.response.pre', $e);
+        $pubsub->publishUntil($stateChanged, 'mvc.response', $e);
+        $pubsub->publishUntil($stateChanged, 'mvc.response.post', $e);
+        return;
+
+    error:
+        $pubsub->publishUntil($stateChanged, 'mvc.error', $e);
+
+The actual workings are slightly more complex, but the ideas hold.
+
+The ramifications of this architecture are intriguing:
+
+ * There's no need to use *any* ZF classes with the front controller (other than
+   the event, event manager (pubsub), and front controller); you can potentially
+   create your own structure and callbacks to use.
+
+ * If interfaces are provided, they simply provide a hook into the default use
+   case we choose to provide.
+
+ * Developers could potentially override the FrontController and provide their
+   own application states, providing for custom workflows.
+
+Additional Components
+---------------------
+Phly_Mvc does aim to provide a default work flow for the front controller. This
+work flow will include:
+
+ * Request object
+   This object will simply provide access to the current environment, much as
+   Zend_Controller_Request does already. The primary differences will be that
+   injection into the various "superglobal" accessors will be built in. 
+
+ * Response object
+   This object will be a container for response-related items, including
+   headers, values related to rendering, and potentially cookies. The primary
+   interface method will be sendOutput(), which will be used to serialize the
+   various items into output. Serialization will primarily be done via
+   Renderers.
+
+ * Renderer object
+   A Renderer will take response values and determine what to do with them. The
+   default use case will be to use Zend_View + Zend_Layout to produce content.
+
+ * Router object
+   Pulls the response from the event, and then decomposes that into key/value
+   pairs to inject in the request.
+
+ * Dispatcher object
+   Determines how to dispatch the request. The default use case will be to
+   determine the module, controller, and action from the request object, and
+   then simply instantiate and invoke the appropriate class; potentially,
+   however, you could use any logic you like, including simply providing
+   closures.
+
+ * Action controllers
+   These will work basically the same as they do currently, with a few
+   exceptions. First, the only necessary method will be __invoke(), and it
+   should accept an Event object. From there, how it matches the action to
+   functionality is up to the developer.
+
+   The base ActionController class will provide some standard functionality
+   surrounding this, and will attempt to invoke *Action() methods, just as
+   Zend_Controller_Action does currently. Additionally, it will add logic to
+   __call() to automatically delegate to action delegates and action helpers.
+
+ * ErrorHandler object
+   Receives errors and updates the event state.
+
