@@ -10,9 +10,11 @@
  * @license    New BSD {@link http://www.opensource.org/licenses/bsd-license.php}
  */
 
-// Call Phly_PubSub_ProviderTest::main() if this source file is executed directly.
+namespace phlytest\pubsub;
+
+// Call \phlytest\pubsub\ProviderTest::main() if this source file is executed directly.
 if (!defined("PHPUnit_MAIN_METHOD")) {
-    define("PHPUnit_MAIN_METHOD", "Phly_PubSub_ProviderTest::main");
+    define("PHPUnit_MAIN_METHOD", "\phlytest\pubsub\ProviderTest::main");
 }
 
 /**
@@ -20,10 +22,9 @@ if (!defined("PHPUnit_MAIN_METHOD")) {
  */
 require_once dirname(__FILE__) . '/../../TestHelper.php';
 
-/**
- * Phly_PubSub
- */
-require_once 'Phly/PubSub/Provider.php';
+use phly\pubsub\Provider as Provider;
+use phly\pubsub\Handle as Handle;
+use \PHPUnit_Framework_TestCase;
 
 /**
  * @category   Phly
@@ -32,11 +33,11 @@ require_once 'Phly/PubSub/Provider.php';
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    New BSD {@link http://www.opensource.org/licenses/bsd-license.php}
  */
-class Phly_PubSub_ProviderTest extends PHPUnit_Framework_TestCase
+class ProviderTest extends \PHPUnit_Framework_TestCase
 {
     public static function main()
     {
-        $suite  = new PHPUnit_Framework_TestSuite("Phly_PubSub_ProviderTest");
+        $suite  = new \PHPUnit_Framework_TestSuite(__CLASS__);
         $result = PHPUnit_TextUI_TestRunner::run($suite);
     }
 
@@ -45,7 +46,7 @@ class Phly_PubSub_ProviderTest extends PHPUnit_Framework_TestCase
         if (isset($this->message)) {
             unset($this->message);
         }
-        $this->provider = new Phly_PubSub_Provider;
+        $this->provider = new Provider;
     }
 
     public function tearDown()
@@ -55,7 +56,7 @@ class Phly_PubSub_ProviderTest extends PHPUnit_Framework_TestCase
     public function testSubscribeShouldReturnHandle()
     {
         $handle = $this->provider->subscribe('test', $this, __METHOD__);
-        $this->assertTrue($handle instanceof Phly_PubSub_Handle);
+        $this->assertTrue($handle instanceof Handle);
     }
 
     public function testSubscribeShouldAddHandleToTopic()
@@ -119,7 +120,7 @@ class Phly_PubSub_ProviderTest extends PHPUnit_Framework_TestCase
         $this->provider->subscribe('string.transform', 'trim');
         $this->provider->subscribe('string.transform', 'str_rot13');
         $value = $this->provider->publish('string.transform', ' foo ');
-        $this->assertEquals(str_rot13(' foo '), $value);
+        $this->assertEquals(\str_rot13(' foo '), $value);
     }
 
     public function testPublishUntilShouldReturnAsSoonAsCallbackReturnsTrue()
@@ -139,7 +140,7 @@ class Phly_PubSub_ProviderTest extends PHPUnit_Framework_TestCase
         $this->provider->subscribe('string.transform', 'trim');
         $this->provider->subscribe('string.transform', 'str_rot13');
         $value = $this->provider->filter('string.transform', ' foo ');
-        $this->assertEquals(str_rot13('foo'), $value);
+        $this->assertEquals(\str_rot13('foo'), $value);
     }
 
     public function handleTestTopic($message)
@@ -153,7 +154,7 @@ class Phly_PubSub_ProviderTest extends PHPUnit_Framework_TestCase
     }
 }
 
-// Call Phly_PubSub_ProviderTest::main() if this source file is executed directly.
-if (PHPUnit_MAIN_METHOD == "Phly_PubSub_ProviderTest::main") {
-    Phly_PubSub_ProviderTest::main();
+// Call ProviderTest::main() if this source file is executed directly.
+if (PHPUnit_MAIN_METHOD == "\phlytest\pubsub\ProviderTest::main") {
+    ProviderTest::main();
 }

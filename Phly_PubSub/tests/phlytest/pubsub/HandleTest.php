@@ -10,9 +10,11 @@
  * @license    New BSD {@link http://www.opensource.org/licenses/bsd-license.php}
  */
 
-// Call Phly_PubSub_HandleTest::main() if this source file is executed directly.
+namespace phlytest\pubsub;
+
+// Call \phlytest\pubsub\HandleTest::main() if this source file is executed directly.
 if (!defined("PHPUnit_MAIN_METHOD")) {
-    define("PHPUnit_MAIN_METHOD", "Phly_PubSub_HandleTest::main");
+    define("PHPUnit_MAIN_METHOD", "\phlytest\pubsub\HandleTest::main");
 }
 
 /**
@@ -20,10 +22,8 @@ if (!defined("PHPUnit_MAIN_METHOD")) {
  */
 require_once dirname(__FILE__) . '/../../TestHelper.php';
 
-/**
- * Phly_PubSub_Handle
- */
-require_once 'Phly/PubSub/Handle.php';
+use phly\pubsub\Handle as Handle;
+use \PHPUnit_Framework_TestCase;
 
 /**
  * @category   Phly
@@ -32,12 +32,12 @@ require_once 'Phly/PubSub/Handle.php';
  * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    New BSD {@link http://www.opensource.org/licenses/bsd-license.php}
  */
-class Phly_PubSub_HandleTest extends PHPUnit_Framework_TestCase
+class HandleTest extends \PHPUnit_Framework_TestCase
 {
     public static function main()
     {
-        $suite  = new PHPUnit_Framework_TestSuite("Phly_PubSub_HandleTest");
-        $result = PHPUnit_TextUI_TestRunner::run($suite);
+        $suite  = new \PHPUnit_Framework_TestSuite(__CLASS__);
+        $result = \PHPUnit_TextUI_TestRunner::run($suite);
     }
 
     public function setUp()
@@ -49,41 +49,41 @@ class Phly_PubSub_HandleTest extends PHPUnit_Framework_TestCase
 
     public function testGetTopicShouldReturnTopic()
     {
-        $handle = new Phly_PubSub_Handle('foo', 'rand');
+        $handle = new Handle('foo', 'rand');
         $this->assertEquals('foo', $handle->getTopic());
     }
 
     public function testCallbackShouldBeStringIfNoHandlerPassedToConstructor()
     {
-        $handle = new Phly_PubSub_Handle('foo', 'rand');
+        $handle = new Handle('foo', 'rand');
         $this->assertSame('rand', $handle->getCallback());
     }
 
     public function testCallbackShouldBeArrayIfHandlerPassedToConstructor()
     {
-        $handle = new Phly_PubSub_Handle('foo', 'Phly_PubSub_HandleTest_ObjectCallback', 'test');
-        $this->assertSame(array('Phly_PubSub_HandleTest_ObjectCallback', 'test'), $handle->getCallback());
+        $handle = new Handle('foo', '\phlytest\pubsub\HandleTest_ObjectCallback', 'test');
+        $this->assertSame(array('\phlytest\pubsub\HandleTest_ObjectCallback', 'test'), $handle->getCallback());
     }
 
     public function testCallShouldInvokeCallbackWithSuppliedArguments()
     {
-        $handle = new Phly_PubSub_Handle('foo', $this, 'handleCall');
+        $handle = new Handle('foo', $this, 'handleCall');
         $args   = array('foo', 'bar', 'baz');
         $handle->call($args);
         $this->assertSame($args, $this->args);
     }
 
     /**
-     * @expectedException Phly_PubSub_InvalidCallbackException
+     * @expectedException \phly\pubsub\InvalidCallbackException
      */
     public function testPassingInvalidCallbackShouldRaiseInvalidCallbackException()
     {
-        $handle = new Phly_PubSub_Handle('foo', 'boguscallback');
+        $handle = new Handle('foo', 'boguscallback');
     }
 
     public function testCallShouldReturnTheReturnValueOfTheCallback()
     {
-        $handle = new Phly_PubSub_Handle('foo', 'Phly_PubSub_HandleTest_ObjectCallback', 'test');
+        $handle = new Handle('foo', '\phlytest\pubsub\HandleTest_ObjectCallback', 'test');
         $this->assertEquals('bar', $handle->call(array()));
     }
 
@@ -93,7 +93,7 @@ class Phly_PubSub_HandleTest extends PHPUnit_Framework_TestCase
     }
 }
 
-class Phly_PubSub_HandleTest_ObjectCallback
+class HandleTest_ObjectCallback
 {
     public static function test()
     {
@@ -101,7 +101,7 @@ class Phly_PubSub_HandleTest_ObjectCallback
     }
 }
 
-// Call Phly_PubSub_HandleTest::main() if this source file is executed directly.
-if (PHPUnit_MAIN_METHOD == "Phly_PubSub_HandleTest::main") {
-    Phly_PubSub_HandleTest::main();
+// Call \phlytest\pubsub\HandleTest::main() if this source file is executed directly.
+if (PHPUnit_MAIN_METHOD == "\phlytest\pubsub\HandleTest::main") {
+    HandleTest::main();
 }

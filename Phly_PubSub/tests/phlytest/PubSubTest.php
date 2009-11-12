@@ -10,19 +10,20 @@
  * @license    New BSD {@link http://www.opensource.org/licenses/bsd-license.php}
  */
 
-namespace phly\test;
-use \phly\PubSub as PubSub;
-use \phly\pubsub\Handle as Handle;
+namespace phlytest;
 
-// Call Phly_PubSubTest::main() if this source file is executed directly.
+// Call \phlytest\PubSubTest::main() if this source file is executed directly.
 if (!defined("PHPUnit_MAIN_METHOD")) {
-    define("PHPUnit_MAIN_METHOD", "PubSubTest::main");
+    define("PHPUnit_MAIN_METHOD", "\phlytest\PubSubTest::main");
 }
 
 /**
  * Test helper
  */
 require_once dirname(__FILE__) . '/../TestHelper.php';
+
+use phly\PubSub as PubSub;
+use phly\pubsub\Handle as Handle;
 
 /**
  * @category   Phly
@@ -35,7 +36,7 @@ class PubSubTest extends \PHPUnit_Framework_TestCase
 {
     public static function main()
     {
-        $suite  = new \PHPUnit_Framework_TestSuite("PubSubTest");
+        $suite  = new \PHPUnit_Framework_TestSuite(__CLASS__);
         $result = \PHPUnit_TextUI_TestRunner::run($suite);
     }
 
@@ -128,7 +129,7 @@ class PubSubTest extends \PHPUnit_Framework_TestCase
     }
 }
 
-// Call Phly_PubSubTest::main() if this source file is executed directly.
-if (\PHPUnit_MAIN_METHOD == "PubSubTest::main") {
+// Call \phlytest\PubSubTest::main() if this source file is executed directly.
+if (PHPUnit_MAIN_METHOD == "\phlytest\PubSubTest::main") {
     PubSubTest::main();
 }
