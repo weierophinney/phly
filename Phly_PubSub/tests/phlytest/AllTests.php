@@ -24,6 +24,7 @@ require_once dirname(__FILE__) . '/../TestHelper.php';
 require_once 'phlytest/PubSubTest.php';
 require_once 'phlytest/pubsub/HandleTest.php';
 require_once 'phlytest/pubsub/ProviderTest.php';
+require_once 'phlytest/pubsub/FilterChainTest.php';
 
 /**
  * @category   Phly
@@ -46,6 +47,7 @@ class AllTests
         $suite->addTestSuite('\phlytest\PubSubTest');
         $suite->addTestSuite('\phlytest\pubsub\ProviderTest');
         $suite->addTestSuite('\phlytest\pubsub\HandleTest');
+        $suite->addTestSuite('\phlytest\pubsub\FilterChainTest');
 
         return $suite;
     }

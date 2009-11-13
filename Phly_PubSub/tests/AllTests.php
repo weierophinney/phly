@@ -20,11 +20,6 @@ if (!defined('PHPUnit_MAIN_METHOD')) {
 require_once dirname(__FILE__) . '/TestHelper.php';
 
 /**
- * @see Phly_AllTests
- */
-require_once 'Phly/AllTests.php';
-
-/**
  * @category   Phly
  * @package    Phly
  * @subpackage Test
@@ -40,9 +35,9 @@ class AllTests
 
     public static function suite()
     {
-        $suite = new PHPUnit_Framework_TestSuite('Phly');
+        $suite = new PHPUnit_Framework_TestSuite('phly');
 
-        $suite->addTest(Phly_AllTests::suite());
+        $suite->addTest(\phlytest\AllTests::suite());
 
         return $suite;
     }
