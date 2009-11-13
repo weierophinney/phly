@@ -143,6 +143,16 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(\str_rot13('foo'), $value);
     }
 
+    public function testFilterShouldAllowMultipleArgumentsButFilterOnlyFirst()
+    {
+        $this->provider->subscribe('filter.test', $this, 'filterTestCallback1');
+        $this->provider->subscribe('filter.test', $this, 'filterTestCallback2');
+        $obj = (object) array('foo' => 'bar', 'bar' => 'baz');
+        $value = $this->provider->filter('filter.test', '', $obj);
+        $this->assertEquals('foo:bar;bar:baz;', $value);
+        $this->assertEquals((object) array('foo' => 'bar', 'bar' => 'baz'), $obj);
+    }
+
     public function handleTestTopic($message)
     {
         $this->message = $message;
@@ -151,6 +161,22 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
     public function evaluateStringCallback($value)
     {
         return (!$value);
+    }
+
+    public function filterTestCallback1($string, $object)
+    {
+        if (isset($object->foo)) {
+            $string .= 'foo:' . $object->foo . ';';
+        }
+        return $string;
+    }
+
+    public function filterTestCallback2($string, $object)
+    {
+        if (isset($object->bar)) {
+            $string .= 'bar:' . $object->bar . ';';
+        }
+        return $string;
     }
 }
 

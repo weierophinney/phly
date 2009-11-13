@@ -102,8 +102,12 @@ class Provider
             return;
         }
 
+        $args = func_get_args();
+        $args = array_slice($args, 2);
         foreach ($this->_topics[$topic] as $handle) {
-            $value = $handle->call(array($value));
+            $callbackArgs = $args;
+            array_unshift($callbackArgs, $value);
+            $value = $handle->call($callbackArgs);
         }
         return $value;
     }
