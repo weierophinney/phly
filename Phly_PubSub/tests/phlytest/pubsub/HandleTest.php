@@ -96,6 +96,12 @@ class HandleTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('callable', $handle->call());
     }
 
+    public function testCallbackToClassImplementingOverloadingShouldSucceed()
+    {
+        $handle = new Handle('foo', '\phlytest\pubsub\handlers\Overloadable', 'foo');
+        $this->assertEquals('foo', $handle->call());
+    }
+
     public function handleCall()
     {
         $this->args = func_get_args();

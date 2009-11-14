@@ -88,8 +88,17 @@ class Handle
     public function call(array $args = array())
     {
         $callback = $this->getCallback();
-        if (!is_callable($callback)) {
-            throw new InvalidCallbackException(var_export($callback, 1));
+        if (is_array($callback)) {
+            if (is_object($callback[0])
+                && !is_callable($callback)
+                && !method_exists($callback[0], '__call')
+            ) {
+                throw new InvalidCallbackException();
+            } elseif (!is_callable($callback)) {
+                throw new InvalidCallbackException();
+            }
+        } elseif (!is_callable($callback)) {
+            throw new InvalidCallbackException();
         }
         return call_user_func_array($callback, $args);
     }
