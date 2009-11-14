@@ -11,17 +11,6 @@
  */
 
 namespace phlytest\pubsub;
-
-// Call \phlytest\pubsub\HandleTest::main() if this source file is executed directly.
-if (!defined("PHPUnit_MAIN_METHOD")) {
-    define("PHPUnit_MAIN_METHOD", "\phlytest\pubsub\HandleTest::main");
-}
-
-/**
- * Test helper
- */
-require_once dirname(__FILE__) . '/../../TestHelper.php';
-
 use phly\pubsub\Handle as Handle;
 use \PHPUnit_Framework_TestCase;
 
@@ -34,12 +23,6 @@ use \PHPUnit_Framework_TestCase;
  */
 class HandleTest extends \PHPUnit_Framework_TestCase
 {
-    public static function main()
-    {
-        $suite  = new \PHPUnit_Framework_TestSuite(__CLASS__);
-        $result = \PHPUnit_TextUI_TestRunner::run($suite);
-    }
-
     public function setUp()
     {
         if (isset($this->args)) {
@@ -61,8 +44,8 @@ class HandleTest extends \PHPUnit_Framework_TestCase
 
     public function testCallbackShouldBeArrayIfHandlerPassedToConstructor()
     {
-        $handle = new Handle('foo', '\phlytest\pubsub\HandleTest_ObjectCallback', 'test');
-        $this->assertSame(array('\phlytest\pubsub\HandleTest_ObjectCallback', 'test'), $handle->getCallback());
+        $handle = new Handle('foo', '\phlytest\pubsub\handlers\ObjectCallback', 'test');
+        $this->assertSame(array('\phlytest\pubsub\handlers\ObjectCallback', 'test'), $handle->getCallback());
     }
 
     public function testCallShouldInvokeCallbackWithSuppliedArguments()
@@ -76,32 +59,45 @@ class HandleTest extends \PHPUnit_Framework_TestCase
     /**
      * @expectedException \phly\pubsub\InvalidCallbackException
      */
-    public function testPassingInvalidCallbackShouldRaiseInvalidCallbackException()
+    public function testPassingInvalidCallbackShouldRaiseInvalidCallbackExceptionDuringCall()
     {
-        $handle = new Handle('foo', 'boguscallback');
+        $handle = new Handle('Invokable', 'boguscallback');
+        $handle->call();
     }
 
     public function testCallShouldReturnTheReturnValueOfTheCallback()
     {
-        $handle = new Handle('foo', '\phlytest\pubsub\HandleTest_ObjectCallback', 'test');
+        $handle = new Handle('foo', '\phlytest\pubsub\handlers\ObjectCallback', 'test');
+        if (!is_callable(array('\phlytest\pubsub\handlers\ObjectCallback', 'test'))) {
+            echo "\nClass exists? " . var_export(class_exists('\phlytest\pubsub\handlers\ObjectCallback'), 1) . "\n";
+            echo "Include path: " . get_include_path() . "\n";
+        }
         $this->assertEquals('bar', $handle->call(array()));
+    }
+
+    public function testStringCallbackResolvingToClassNameShouldCallViaInvoke()
+    {
+        $handle = new Handle('foo', '\phlytest\pubsub\handlers\Invokable');
+        $this->assertEquals('__invoke', $handle->call(), var_export($handle->getCallback(), 1));
+    }
+
+    /**
+     * @expectedException \phly\pubsub\InvalidCallbackException
+     */
+    public function testStringCallbackReferringToClassWithoutDefinedInvokeShouldRaiseException()
+    {
+        $handle = new Handle('foo', '\phlytest\pubsub\handlers\InstanceMethod');
+        $handle->call();
+    }
+
+    public function testCallbackConsistingOfStringContextWithNonStaticMethodShouldInstantiateContext()
+    {
+        $handle = new Handle('foo', '\phlytest\pubsub\handlers\InstanceMethod', 'callable');
+        $this->assertEquals('callable', $handle->call());
     }
 
     public function handleCall()
     {
         $this->args = func_get_args();
     }
-}
-
-class HandleTest_ObjectCallback
-{
-    public static function test()
-    {
-        return 'bar';
-    }
-}
-
-// Call \phlytest\pubsub\HandleTest::main() if this source file is executed directly.
-if (PHPUnit_MAIN_METHOD == "\phlytest\pubsub\HandleTest::main") {
-    HandleTest::main();
 }

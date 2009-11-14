@@ -1,16 +1,18 @@
 <?php
-$libDir = dirname(__FILE__) . '/../library';
-if (file_exists($libDir) && is_dir($libDir)) {
+$libDir = realpath(dirname(__FILE__) . '/../library');
+$curDir = realpath(dirname(__FILE__));
+foreach (array($libDir, $curDir) as $dir) {
     $incPath = get_include_path();
-    if (!strstr($incPath, $libDir)) {
-        set_include_path($libDir . PATH_SEPARATOR . $incPath);
+    if (!strstr($incPath, $dir)) {
+        set_include_path($dir . PATH_SEPARATOR . $incPath);
     }
     unset($incPath);
 }
-unset($libDir);
+unset($curDir, $libDir);
 
 spl_autoload_register(function($classname)
 {
+    $classname = ltrim($classname, '\\');
     $namespace = '';
     $filename  = '';
     if (false !== ($lastNsPos = strripos($classname, '\\'))) {
@@ -19,6 +21,6 @@ spl_autoload_register(function($classname)
         $filename  = str_replace('\\', '/', $namespace) . '/';
     }
     $filename .= str_replace('_', '/', $classname) . '.php';
-    return require_once($filename);
+    return @include_once($filename);
 });
 

@@ -11,17 +11,6 @@
  */
 
 namespace phlytest\pubsub;
-
-// Call \phlytest\pubsub\ProviderTest::main() if this source file is executed directly.
-if (!defined("PHPUnit_MAIN_METHOD")) {
-    define("PHPUnit_MAIN_METHOD", "\phlytest\pubsub\ProviderTest::main");
-}
-
-/**
- * Test helper
- */
-require_once dirname(__FILE__) . '/../../TestHelper.php';
-
 use phly\pubsub\Provider as Provider;
 use phly\pubsub\Handle as Handle;
 use \PHPUnit_Framework_TestCase;
@@ -35,12 +24,6 @@ use \PHPUnit_Framework_TestCase;
  */
 class ProviderTest extends \PHPUnit_Framework_TestCase
 {
-    public static function main()
-    {
-        $suite  = new \PHPUnit_Framework_TestSuite(__CLASS__);
-        $result = PHPUnit_TextUI_TestRunner::run($suite);
-    }
-
     public function setUp()
     {
         if (isset($this->message)) {
@@ -178,9 +161,4 @@ class ProviderTest extends \PHPUnit_Framework_TestCase
         }
         return $string;
     }
-}
-
-// Call ProviderTest::main() if this source file is executed directly.
-if (PHPUnit_MAIN_METHOD == "\phlytest\pubsub\ProviderTest::main") {
-    ProviderTest::main();
 }

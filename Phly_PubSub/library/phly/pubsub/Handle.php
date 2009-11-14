@@ -46,9 +46,6 @@ class Handle
         } else {
             $this->_callback = array($context, $handler);
         }
-        if (!is_callable($this->_callback)) {
-            throw new InvalidCallbackException();
-        }
     }
 
     /**
@@ -68,6 +65,17 @@ class Handle
      */
     public function getCallback()
     {
+        if (is_string($this->_callback) && class_exists($this->_callback)) {
+            $this->_callback = new $this->_callback;
+        } elseif (is_array($this->_callback)) {
+            $class = $this->_callback[0];
+            if (is_string($class) && class_exists($class)) {
+                $method = $this->_callback[1];
+                if (!is_callable(array($class, $method))) {
+                    $this->_callback = array(new $class(), $method);
+                }
+            }
+        }
         return $this->_callback;
     }
 
@@ -77,8 +85,12 @@ class Handle
      * @param  array $args Arguments to pass to callback
      * @return mixed
      */
-    public function call(array $args)
+    public function call(array $args = array())
     {
-        return call_user_func_array($this->getCallback(), $args);
+        $callback = $this->getCallback();
+        if (!is_callable($callback)) {
+            throw new InvalidCallbackException(var_export($callback, 1));
+        }
+        return call_user_func_array($callback, $args);
     }
 }

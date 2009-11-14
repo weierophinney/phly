@@ -11,17 +11,6 @@
  */
 
 namespace phlytest;
-
-// Call \phlytest\PubSubTest::main() if this source file is executed directly.
-if (!defined("PHPUnit_MAIN_METHOD")) {
-    define("PHPUnit_MAIN_METHOD", "\phlytest\PubSubTest::main");
-}
-
-/**
- * Test helper
- */
-require_once dirname(__FILE__) . '/../TestHelper.php';
-
 use phly\PubSub as PubSub;
 use phly\pubsub\Handle as Handle;
 
@@ -34,12 +23,6 @@ use phly\pubsub\Handle as Handle;
  */
 class PubSubTest extends \PHPUnit_Framework_TestCase
 {
-    public static function main()
-    {
-        $suite  = new \PHPUnit_Framework_TestSuite(__CLASS__);
-        $result = \PHPUnit_TextUI_TestRunner::run($suite);
-    }
-
     public function setUp()
     {
         if (isset($this->message)) {
@@ -127,9 +110,4 @@ class PubSubTest extends \PHPUnit_Framework_TestCase
     {
         $this->message = $message;
     }
-}
-
-// Call \phlytest\PubSubTest::main() if this source file is executed directly.
-if (PHPUnit_MAIN_METHOD == "\phlytest\PubSubTest::main") {
-    PubSubTest::main();
 }
