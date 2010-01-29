@@ -509,7 +509,7 @@ class Phly_Couch
         }
         $db = $this->_verifyDb($db);
 
-        $response = $this->_prepareAndSend($db . '/_view/'.$name, 'GET', $options);
+        $response = $this->_prepareAndSend($db . '/design/_view/'.$name, 'GET', $options);
         if (!$response->isSuccessful()) {
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception(sprintf('Failed querying database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
@@ -536,9 +536,7 @@ class Phly_Couch
         $client->setUri($uri);
         if (null !== $queryParams) {
             foreach ($queryParams as $key => $value) {
-                if (is_bool($value)) {
-                    $queryParams[$key] = ($value) ? 'true' : 'false';
-                }
+                $queryParams[$key] = json_encode($value);
             }
             $client->setParameterGet($queryParams);
         }
