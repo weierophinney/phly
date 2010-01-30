@@ -1,11 +1,6 @@
 h1. Phly_Nodelist - Chain string and array manipulations
 
-Phly_Nodelist is inspired by both a post by Stas Malyshev on "Ruby-like
-iterators for PHP" [1] and Dojo Toolkit's dojo.Nodelist [2]. Its purpose is to
-make performing operations on all elements of an array (or Traversable object)
-or all characters of a string as easy as calling a method; additionally, it
-allows for such operations to be chained, giving you the possibility of creating
-filter-chains.
+Phly_Nodelist is inspired by both a post by Stas Malyshev on "Ruby-like iterators for PHP" [1] and Dojo Toolkit's dojo.Nodelist [2]. Its purpose is to make performing operations on all elements of an array (or Traversable object) or all characters of a string as easy as calling a method; additionally, it allows for such operations to be chained, giving you the possibility of creating filter-chains.
 
 h2. USAGE
 
@@ -13,20 +8,15 @@ Examples will best show how Nodelist works.
 
 h3. Simplest: each()
 
-The simplest example uses the @each()@ method, which simply iterates through all
-elements and passes information on the the given closure. The closure will be
-passed three arguments:
+The simplest example uses the @each()@ method, which simply iterates through all elements and passes information on the the given closure. The closure will be passed three arguments:
 
 * $v, the value of the current item
 * $k, the key of the current item
 * $l, the nodelist
 
-Your closure does not need to accept all arguments, but those are the ones that
-will be passed. Simply use the arguments necessary for your logic.
+Your closure does not need to accept all arguments, but those are the ones that will be passed. Simply use the arguments necessary for your logic.
 
-bc.
-use Phly\Nodelist\Nodelist;
-
+bc. use Phly\Nodelist\Nodelist;
 $nl = new Nodelist(array(
     'foo' => 'Foo',
     'bar' => 'Bar',
@@ -38,15 +28,11 @@ $nl->each(function($v, $k) use ($concat) {
 
 h3. Custom methods
 
-Flexibility comes from being able to define your own methods. Simply add a
-closure or other callback via the @addMethod()@ method, providing a name, and
-then call the closure via that name.
+Flexibility comes from being able to define your own methods. Simply add a closure or other callback via the @addMethod()@ method, providing a name, and then call the closure via that name.
 
 Just like @each()@, the closure will be passed the value, key, and @Nodelist@.
 
-bc.
-use Phly\Nodelist\Nodelist;
-
+bc. use Phly\Nodelist\Nodelist;
 $nl = new Nodelist(array(
     'foo' => 'Foo',
     'bar' => 'Bar',
@@ -56,15 +42,9 @@ $nl->addMethod('ucValue', function($v, $k, $l) {
 });
 $nl->ucValue();
 
-p.
-You can pass arguments to methods attached in this way, which can be useful for
-applying the same argument across all elements, or passing criteria to test
-against each element. In such a case, the arguments passed will be the first
-arguments passed to the callback.
+p. You can pass arguments to methods attached in this way, which can be useful for applying the same argument across all elements, or passing criteria to test against each element. In such a case, the arguments passed will be the first arguments passed to the callback.
 
-bc.
-use Phly\Nodelist\Nodelist;
-
+bc. use Phly\Nodelist\Nodelist;
 $nl = new Nodelist(array(
     'foo' => 'Foo',
     'bar' => 'Bar',
@@ -78,14 +58,9 @@ $nl->ucSelective('o');
 
 h3. Chaining methods
 
-The method @each()@ and any custom methods called will always return the
-@Nodelist@ (the latter is true because they are invoked via @__call()@, which
-takes care of the return value). This allows you to string several calls
-together.
+The method @each()@ and any custom methods called will always return the @Nodelist@ (the latter is true because they are invoked via @__call()@, which takes care of the return value). This allows you to string several calls together.
 
-bc.
-use Phly\Nodelist\Nodelist;
-
+bc. use Phly\Nodelist\Nodelist;
 $nl = new Nodelist(array(
     'foo' => 'Foo',
     'bar' => 'Bar',
@@ -112,8 +87,7 @@ Several list manipulation methods are also defined:
 
 h2. Getting native types
 
-You may want access to the original value, or you may want to cast the value to
-an array or string. @Nodelist@ has methods for these operations.
+You may want access to the original value, or you may want to cast the value to an array or string. @Nodelist@ has methods for these operations.
 
 * @getOriginalValue()@: retrieves the original string or array passed to the @Nodelist@, or, if a @Traversable@ object, the instance (@Nodelist@ does not clone it).
 * @toString()@: if a string was passed to @Nodelist@, a string representation of the current state of the @Nodelist@.
@@ -121,33 +95,22 @@ an array or string. @Nodelist@ has methods for these operations.
 
 h2. Caveats
 
-It's tempting to use native PHP functions as callbacks, such as @strtolower()@
-and @strtoupper()@. However, unlike user-defined functions and closures, PHP
-functions are strict in the number of parameters they expect, and passing
-additional parameters will lead to warnings and unexpected results. As an
-example, the following code:
+It's tempting to use native PHP functions as callbacks, such as @strtolower()@ and @strtoupper()@. However, unlike user-defined functions and closures, PHP functions are strict in the number of parameters they expect, and passing additional parameters will lead to warnings and unexpected results. As an example, the following code:
 
-bc.
-$nl = new Nodelist($array);
+bc. $nl = new Nodelist($array);
 $nl->each('strtoupper');
 
-p.
-will result in the following warning:
+p. will result in the following warning:
 
-pre.
-PHP Warning:  strtoupper() expects exactly 1 parameter, 3 given
+pre. PHP Warning:  strtoupper() expects exactly 1 parameter, 3 given
 
-p.
-Additionally, it won't actually _do_ anything. 
+p. Additionally, it won't actually _do_ anything. 
 
-On top of all that, stop and consider: what would you expect it to do? Because
-it's operating on only the node value itself, it makes no changes to the
-@Nodelist@ -- which isn't terribly useful. 
+On top of all that, stop and consider: what would you expect it to do? Because it's operating on only the node value itself, it makes no changes to the @Nodelist@ -- which isn't terribly useful. 
 
 The proper way to write such functionality would be as follows:
 
-bc.
-$nl->addMethod('strtoupper', function($v, $k, $l) {
+bc. $nl->addMethod('strtoupper', function($v, $k, $l) {
     $l[$k] = strtoupper($v);
 });
 $nl->strtoupper();
@@ -161,4 +124,5 @@ h2. TODO
 h2. References
 
 fn1. http://php100.wordpress.com/2010/01/27/ruby-iterators-in-php/
+
 fn2. http://docs.dojocampus.org/dojo/NodeList
