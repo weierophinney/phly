@@ -188,12 +188,103 @@ class NodelistTest extends TestCase
     public function testEachShouldCallClosureOnAllElements()
     {
         $nl = new Nodelist(array('foo' => 'bar', 'bar' => 'baz'));
-        $o  = new stdClass;
-        $nl->each(function($v, $k) use ($o) {
-            $o->$k = $v;
+        $o  = new ArrayObject;
+        $nl->each(function($v) use ($o) {
+            $o->append($v);
         });
-        foreach ($nl as $k => $v) {
-            $this->assertEquals($v, $o->$k);
+        $test = $o->getArrayCopy();
+        foreach ($nl as $v) {
+            $this->assertContains($v, $test, "$v: " . var_export($test, 1));
         }
+    }
+
+    public function testClosurePassedToEachShouldModifyNodelistInPlace()
+    {
+        $a  = array('foo' => 'bar', 'bar' => 'baz');
+        $nl = new Nodelist($a);
+        $nl->each(function ($v, $k, $l) {
+            $l[$k] = strtoupper($v);
+        });
+        foreach ($a as $key => $value) {
+            $this->assertEquals(strtoupper($value), $nl[$key]);
+        }
+    }
+
+    public function testPushWithNoKeyAppendsValueToNodelist()
+    {
+        $nl = new Nodelist(array('foo', 'bar'));
+        $nl->push('baz');
+        $this->assertEquals(array('foo', 'bar', 'baz'), $nl->toArray());
+    }
+
+    public function testPushWithKeyAddsValueToNodelistWithKey()
+    {
+        $nl = new Nodelist(array('foo' => 'FOO', 'bar' => 'BAR'));
+        $nl->push('BAZ', 'baz');
+        $this->assertSame(array('foo' => 'FOO', 'bar' => 'BAR', 'baz' => 'BAZ'), $nl->toArray());
+    }
+
+    public function testPopRemovesLastItemFromNodelist()
+    {
+        $nl = new Nodelist(array('foo', 'bar'));
+        $r  = $nl->pop();
+        $this->assertEquals(array('foo'), $nl->toArray());
+        $this->assertEquals('bar', $r);
+    }
+
+    public function testPopWithKeyRemovesNamedItemFromNodelist()
+    {
+        $nl = new Nodelist(array('foo', 'bar'));
+        $r  = $nl->pop(0);
+        $this->assertEquals(array(1 => 'bar'), $nl->toArray());
+        $this->assertEquals('foo', $r);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testPopWithInvalidKeyShouldRaiseException()
+    {
+        $nl = new Nodelist(array('foo', 'bar'));
+        $r  = $nl->pop('foo');
+    }
+
+    public function testUnshiftWithNoKeyPrependsValueToNodelist()
+    {
+        $nl = new Nodelist(array('foo', 'bar'));
+        $nl->unshift('baz');
+        $this->assertEquals(array('baz', 'foo', 'bar'), $nl->toArray());
+    }
+
+    public function testWithKeyAddsValueToNodelistWithKey()
+    {
+        $nl = new Nodelist(array('foo' => 'FOO', 'bar' => 'BAR'));
+        $nl->unshift('BAZ', 'baz');
+        $this->assertSame(array('baz' => 'BAZ', 'foo' => 'FOO', 'bar' => 'BAR'), $nl->toArray());
+    }
+
+    public function testShiftRemovesFirstItemFromNodelist()
+    {
+        $nl = new Nodelist(array('foo', 'bar'));
+        $r  = $nl->shift();
+        $this->assertEquals(array('bar'), $nl->toArray());
+        $this->assertEquals('foo', $r);
+    }
+
+    public function testShiftWithKeyRemovesNamedItemFromNodelist()
+    {
+        $nl = new Nodelist(array('foo', 'bar'));
+        $r  = $nl->shift(1);
+        $this->assertEquals(array(0 => 'foo'), $nl->toArray());
+        $this->assertEquals('bar', $r);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testShiftWithInvalidKeyShouldRaiseException()
+    {
+        $nl = new Nodelist(array('foo', 'bar'));
+        $r  = $nl->shift('foo');
     }
 }
