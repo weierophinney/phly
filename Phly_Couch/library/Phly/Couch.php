@@ -495,12 +495,14 @@ class Phly_Couch
     /**
      * Retrieve a view
      *
-     * @param  string $name
+     * @param  string $design
+     * @param  string $view
+     * @param  string $key ?key=key
      * @param  null|array $options 
      * @return Phly_Couch_DocumentSet
      * @throws Phly_Couch_Exception on failure or bad db
      */
-    public function view($name, array $options = null)
+    public function view($design, $view, $key = null, array $options = null)
     {
         $db = null;
         if (is_array($options) && array_key_exists('db', $options)) {
@@ -508,8 +510,11 @@ class Phly_Couch
             unset($options['db']);
         }
         $db = $this->_verifyDb($db);
-
-        $response = $this->_prepareAndSend($db . '/_view/'.$name, 'GET', $options);
+        if (is_null($key)) {
+            $response = $this->_prepareAndSend($db . '/_design/'.$design.'/_view/'.$view.'/', 'GET', $options);
+        } else {
+            $response = $this->_prepareAndSend($db . '/_design/'.$design.'/_view/'.$view.'/?key=%22'.$key.'%22', 'GET', $options);
+        }
         if (!$response->isSuccessful()) {
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception(sprintf('Failed querying database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
@@ -556,6 +561,7 @@ class Phly_Couch
     {
         $client = $this->getHttpClient();
         $this->_prepareUri($path, $queryParams);
+        $client->setEncType('application/json');
         $response = $client->request($method);
         $client->resetParameters();
         return $response;
