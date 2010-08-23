@@ -513,7 +513,13 @@ class Phly_Couch
         if (is_null($key)) {
             $response = $this->_prepareAndSend($db . '/_design/'.$design.'/_view/'.$view.'/', 'GET', $options);
         } else {
-            $response = $this->_prepareAndSend($db . '/_design/'.$design.'/_view/'.$view.'/?key=%22'.$key.'%22', 'GET', $options);
+            if (is_numeric($key)) {
+                $response = $this->_prepareAndSend($db . '/_design/'.$design.'/_view/'.$view.'/?key='.$key, 'GET', $options);
+            } elseif (is_string($key)) {
+                $response = $this->_prepareAndSend($db . '/_design/'.$design.'/_view/'.$view.'/?key=%22'.$key.'%22', 'GET', $options);
+            } else {
+                throw new Phly_Couch_Exception('Wrong key type!');
+            }
         }
         if (!$response->isSuccessful()) {
             require_once 'Phly/Couch/Exception.php';
