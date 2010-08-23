@@ -510,17 +510,18 @@ class Phly_Couch
             unset($options['db']);
         }
         $db = $this->_verifyDb($db);
-        if (is_null($key)) {
-            $response = $this->_prepareAndSend($db . '/_design/'.$design.'/_view/'.$view.'/', 'GET', $options);
-        } else {
+        $param = '';
+        if (!is_null($key)) {
             if (is_numeric($key)) {
-                $response = $this->_prepareAndSend($db . '/_design/'.$design.'/_view/'.$view.'/?key='.$key, 'GET', $options);
+                $param = '/?key='.$key;
             } elseif (is_string($key)) {
-                $response = $this->_prepareAndSend($db . '/_design/'.$design.'/_view/'.$view.'/?key=%22'.$key.'%22', 'GET', $options);
+                $param = '/?key=%22'.$key.'%22';
             } else {
                 throw new Phly_Couch_Exception('Wrong key type!');
             }
-        }
+        } 
+            $response = $this->_prepareAndSend($db . '/_design/'.$design.'/_view/'.$view.'/'.$param, 'GET', $options);
+        
         if (!$response->isSuccessful()) {
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception(sprintf('Failed querying database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
