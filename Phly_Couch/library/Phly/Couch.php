@@ -543,6 +543,7 @@ class Phly_Couch
     protected function _prepareUri($path, array $queryParams = null)
     {
         $client = $this->getHttpClient();
+        $client->setHeaders('Content-Type', 'application/json');
         $uri    = 'http://' . $this->getHost() . ':' . $this->getPort() . '/' . $path;
 
         $client->setUri($uri);
