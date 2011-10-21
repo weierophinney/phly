@@ -512,7 +512,7 @@ class Phly_Couch
         $db = $this->_verifyDb($db);
         $param = '';
         if (!is_null($key)) {
-            if (is_numeric($key)) {
+            if (is_int($key)) {
                 $param = '/?key='.$key;
             } elseif (is_string($key)) {
                 $param = '/?key=%22'.$key.'%22';
