@@ -408,6 +408,7 @@ class Phly_Couch
                 throw new Phly_Couch_Exception('Document updates require a document id; none provided');
             }
             $method = 'PUT';
+            $path  .= $id;
         }
         $this->getHttpClient()->setRawData($document->toJson());
         $response = $this->_prepareAndSend($path, $method);
