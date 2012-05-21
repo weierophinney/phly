@@ -92,7 +92,7 @@ class HandleTest extends \PHPUnit_Framework_TestCase
 
     public function testCallbackConsistingOfStringContextWithNonStaticMethodShouldInstantiateContext()
     {
-        $handle = new Handle('foo', '\phlytest\pubsub\handlers\InstanceMethod', 'callable');
+        $handle = new Handle('foo', 'phlytest\pubsub\handlers\InstanceMethod', 'callable');
         $this->assertEquals('callable', $handle->call());
     }
 

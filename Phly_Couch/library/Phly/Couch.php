@@ -408,6 +408,7 @@ class Phly_Couch
                 throw new Phly_Couch_Exception('Document updates require a document id; none provided');
             }
             $method = 'PUT';
+            $path  .= $id;
         }
         $this->getHttpClient()->setRawData($document->toJson());
         $response = $this->_prepareAndSend($path, $method);
@@ -495,12 +496,14 @@ class Phly_Couch
     /**
      * Retrieve a view
      *
-     * @param  string $name
+     * @param  string $design
+     * @param  string $view
+     * @param  string $key ?key=key
      * @param  null|array $options 
      * @return Phly_Couch_DocumentSet
      * @throws Phly_Couch_Exception on failure or bad db
      */
-    public function view($name, array $options = null)
+    public function view($design, $view, $key = null, array $options = null)
     {
         $db = null;
         if (is_array($options) && array_key_exists('db', $options)) {
@@ -508,8 +511,18 @@ class Phly_Couch
             unset($options['db']);
         }
         $db = $this->_verifyDb($db);
-
-        $response = $this->_prepareAndSend($db . '/_view/'.$name, 'GET', $options);
+        $param = '';
+        if (!is_null($key)) {
+            if (is_int($key)) {
+                $param = '/?key='.$key;
+            } elseif (is_string($key)) {
+                $param = '/?key=%22'.$key.'%22';
+            } else {
+                throw new Phly_Couch_Exception('Wrong key type!');
+            }
+        } 
+            $response = $this->_prepareAndSend($db . '/_design/'.$design.'/_view/'.$view.'/'.$param, 'GET', $options);
+        
         if (!$response->isSuccessful()) {
             require_once 'Phly/Couch/Exception.php';
             throw new Phly_Couch_Exception(sprintf('Failed querying database "%s"; received response code "%s"', $db, (string) $response->getStatus()));
@@ -556,6 +569,7 @@ class Phly_Couch
     {
         $client = $this->getHttpClient();
         $this->_prepareUri($path, $queryParams);
+        $client->setEncType('application/json');
         $response = $client->request($method);
         $client->resetParameters();
         return $response;

@@ -6,12 +6,13 @@
  * @package   \phly\PubSub
  * @copyright Copyright (C) 2008 - Present, Matthew Weier O'Phinney
  * @author    Matthew Weier O'Phinney <mweierophinney@gmail.com> 
- * @license   New BSD {@link http://www.opensource.org/licenses/bsd-license.php}
+ * @license   New BSD {@link http://mwop.net/license}
  */
 
 namespace phly;
-use \phly\pubsub\Provider as Provider;
-use \phly\pubsub\Handle as Handle;
+
+use phly\pubsub\Provider as Provider;
+use phly\pubsub\Handle as Handle;
 
 /**
  * \phly\PubSub: Publish-Subscribe system for PHP

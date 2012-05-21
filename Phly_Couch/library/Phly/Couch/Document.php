@@ -5,17 +5,19 @@ class Phly_Couch_Document
 
     public function __construct($options = null)
     {
-        if (is_string($options)) {
-            if ('{' == substr($options, 0, 1)) {
-                $this->loadJson($options);
+        if (null !== $options){
+            if (is_string($options)) {
+                if ('{' == substr($options, 0, 1)) {
+                    $this->loadJson($options);
+                } else {
+                    $this->setId($options);
+                }
+            } elseif (is_array($options)) {
+                $this->loadArray($options);
             } else {
-                $this->setId($options);
+                require_once 'Phly/Couch/Exception.php';
+                throw new Phly_Couch_Exception('Invalid options provided to ' . __CLASS__ . 'constructor');
             }
-        } elseif (is_array($options)) {
-            $this->loadArray($options);
-        } else {
-            require_once 'Phly/Couch/Exception.php';
-            throw new Phly_Couch_Exception('Invalid options provided to ' . __CLASS__ . 'constructor');
         }
     }
 
